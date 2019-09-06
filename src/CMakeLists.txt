@@ -69,6 +69,9 @@ add_library(signal-protocol-c
 	${signal_protocol_SRCS}
 	$<TARGET_OBJECTS:curve25519>
 	$<TARGET_OBJECTS:protobuf-c>
+        $<TARGET_OBJECTS:mbedtls>
+        $<TARGET_OBJECTS:jsmn>
+        $<TARGET_OBJECTS:http>
 )
 
 if(BUILD_SHARED_LIBS)

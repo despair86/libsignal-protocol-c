@@ -514,7 +514,7 @@ void signal_sha512_digest_cleanup(signal_context *context, void *digest_context)
 {
     assert(context);
     assert(context->crypto_provider.sha512_digest_cleanup_func);
-    return context->crypto_provider.sha512_digest_cleanup_func(digest_context, context->crypto_provider.user_data);
+    context->crypto_provider.sha512_digest_cleanup_func(digest_context, context->crypto_provider.user_data);
 }
 
 int signal_encrypt(signal_context *context,

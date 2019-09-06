@@ -1,9 +1,6 @@
 enable_testing()
 find_library(M_LIB m)
 find_package(Check 0.9.10 REQUIRED)
-IF(NOT(APPLE AND ${CMAKE_SYSTEM_NAME} MATCHES "Darwin"))
-  find_package(OpenSSL 1.0 REQUIRED)
-ENDIF()
 find_package(Threads)
 include_directories(${CHECK_INCLUDE_DIRS})
 
@@ -33,7 +30,6 @@ endif()
 set(LIBS ${LIBS}
 	${M_LIB}
 	${CHECK_LDFLAGS}
-	${OPENSSL_LIBRARIES}
 	${CMAKE_THREAD_LIBS_INIT}
 	${CMAKE_DL_LIBS}
 	signal-protocol-c
@@ -44,18 +40,11 @@ set(common_SRCS
 	test_common.h
 )
 
-include_directories(. ../src)
+include_directories(. ../src ../crypto)
 
-IF(APPLE AND ${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
-	set(common_SRCS ${common_SRCS}
-		test_common_ccrypto.c
-	)
-ELSE()
-	set(common_SRCS ${common_SRCS}
-		test_common_openssl.c
-	)
-	include_directories(${OPENSSL_INCLUDE_DIR})
-ENDIF()
+set(common_SRCS ${common_SRCS}
+	test_common_mbedtls.c
+)
 
 add_executable(test_curve25519 test_curve25519.c ${common_SRCS})
 target_link_libraries(test_curve25519 ${LIBS})

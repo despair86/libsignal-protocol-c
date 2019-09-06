@@ -55,6 +55,7 @@ TEST_BIG_ENDIAN(WORDS_BIGENDIAN)
 IF(WORDS_BIGENDIAN)
 	ADD_DEFINITIONS(-DWORDS_BIGENDIAN)
 ENDIF(WORDS_BIGENDIAN)
+ADD_DEFINITIONS(-DJSMN_STRICT -DJSMN_PARENT_LINKS)
 
 IF(COVERAGE)
 	SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fprofile-arcs -ftest-coverage")
@@ -71,6 +72,9 @@ IF(COVERAGE)
 ENDIF(COVERAGE)
 
 add_subdirectory(src)
+add_subdirectory(crypto)
+add_subdirectory(json)
+add_subdirectory(http)
 
 IF(BUILD_TESTING)
 	add_subdirectory(tests)
