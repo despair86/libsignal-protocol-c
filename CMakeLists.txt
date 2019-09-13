@@ -75,6 +75,7 @@ add_subdirectory(src)
 add_subdirectory(crypto)
 add_subdirectory(json)
 add_subdirectory(http)
+add_subdirectory(app)
 
 IF(BUILD_TESTING)
 	add_subdirectory(tests)

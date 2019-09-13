@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 despair
+ * Copyright (C) 2019 Rick V. All rights reserved.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -38,7 +38,7 @@ static int init_mbedtls_randumb()
     int r;
     mbedtls_ctr_drbg_init(&drbg_ctx);
     mbedtls_entropy_init(&rnd_ctx);
-    /* A so-called "device specific id" to seed the internal RNG - here it's app-specific*/
+    /* A so-called "device specific id" to seed the internal RNG - here it's app-specific */
     const unsigned char* APP_SEED_RNG = "mbedtls crypto provider for Loki Messenger (lite)";
     r = mbedtls_ctr_drbg_seed(&drbg_ctx, mbedtls_entropy_func, &rnd_ctx, APP_SEED_RNG, strlen(APP_SEED_RNG));
     if (r)
@@ -275,7 +275,6 @@ int mbedtls_encrypt(signal_buffer **output,
     result = mbedtls_cipher_setup(ctx, evp_cipher);
     result = mbedtls_cipher_set_iv(ctx, iv, iv_len);
     result = mbedtls_cipher_setkey(ctx, key, key_len*8, MBEDTLS_ENCRYPT);
-    result = mbedtls_cipher_reset(ctx);
     if(result) {
         fprintf(stderr, "cannot initialize cipher\n");
         result = SG_ERR_UNKNOWN;
@@ -364,7 +363,6 @@ int mbedtls_decrypt(signal_buffer **output,
     result = mbedtls_cipher_setup(ctx, evp_cipher);
     result = mbedtls_cipher_set_iv(ctx, iv, iv_len);
     result = mbedtls_cipher_setkey(ctx, key, key_len*8, MBEDTLS_DECRYPT);
-    result = mbedtls_cipher_reset(ctx);
     if(result) {
         fprintf(stderr, "cannot initialise cipher\n");
         result = SG_ERR_UNKNOWN;
