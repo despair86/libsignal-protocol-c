@@ -15,6 +15,8 @@ ENDIF(CMAKE_C_COMPILER_ID MATCHES "Clang")
 
 set(jsmn_SRCS
 jsmn.c
+json.c
+buf.c
 )
 
 add_library(jsmn OBJECT ${jsmn_SRCS})
