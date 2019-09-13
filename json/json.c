@@ -25,7 +25,6 @@
 
 #define JSMN_HEADER
 #include "json.h"
-#include "buf.h"
 
 #define BUFFER_SIZE 32768
 #define JSON_TOKENS 256
