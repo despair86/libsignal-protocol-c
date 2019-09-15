@@ -42,10 +42,10 @@ main(argc,argv)
 char** argv;
 {
     puts(loki_logo);
-    if(client_init())
+    if(http_client_init())
     {
         printf("HTTP Client User-Agent: %s\n", client_ua);
-        client_cleanup();
+        http_client_cleanup();
     }
     else
     {

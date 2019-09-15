@@ -69,7 +69,7 @@ typedef struct url_parser_url {
 static const char* seed = "Loki Pager HTTPS client";
 
 /* If this fails, do NOT use the HTTP client */
-bool client_init() {
+bool http_client_init() {
 #ifdef _WIN32
     DWORD version, major, minor, build;
 #endif
@@ -88,8 +88,7 @@ bool client_init() {
     mbedtls_ctr_drbg_init(&ctr_drbg);
 
     FILE* certs = fopen("rootcerts.pem", "rb");
-    if (!certs)
-    {
+    if (!certs) {
         fprintf(stderr, "root certs not found, aborting\n");
         return false;
     }
@@ -103,7 +102,7 @@ bool client_init() {
         printf("parse ca cert store failed\n  !  mbedtls_x509_crt_parse returned: %s\n\n", str);
         return false;
     }
-    if (mbedtls_ctr_drbg_seed(&ctr_drbg, mbedtls_entropy_func, &entropy, (unsigned char*)seed, strlen(seed)) != 0)
+    if (mbedtls_ctr_drbg_seed(&ctr_drbg, mbedtls_entropy_func, &entropy, (unsigned char*) seed, strlen(seed)) != 0)
         return false;
     /* fill in user-agent string */
 #ifdef _WIN32
@@ -126,7 +125,7 @@ bool client_init() {
     return true;
 }
 
-bool initTLS() {
+static bool initTLS() {
     /* Clear only previous connection state */
     mbedtls_net_init(&server_fd);
     mbedtls_ssl_init(&ssl);
@@ -134,7 +133,7 @@ bool initTLS() {
     return true;
 }
 
-void free_parsed_url(url_parsed)
+static void free_parsed_url(url_parsed)
 url_parser_url_t *url_parsed;
 {
     if (url_parsed->protocol)
@@ -149,7 +148,7 @@ url_parser_url_t *url_parsed;
     free(url_parsed);
 }
 
-parse_url(url, verify_host, parsed_url)
+static parse_url(url, verify_host, parsed_url)
 char *url;
 bool verify_host;
 url_parser_url_t *parsed_url;
@@ -242,7 +241,7 @@ url_parser_url_t *parsed_url;
     return 0;
 }
 
-void *memncat(a, an, b, bn, s)
+static void *memncat(a, an, b, bn, s)
 const void *a, *b;
 size_t an, bn, s;
 {
@@ -253,7 +252,7 @@ size_t an, bn, s;
     return p;
 }
 
-bool open_tls_sock(host, port)
+static bool open_tls_sock(host, port)
 char* host, *port;
 {
     int r;
@@ -352,20 +351,21 @@ static const struct http_funcs callbacks = {
 };
 
 /* A one-shot HTTP client. */
-/* In: URI (string), data (string) + size, extra headers, request type */
+/* In: URI (string), data (string, may be null) + size, extra headers (also optional), request type */
 /* Out: Response, size of response */
 
 /* Returns: HTTP status code in [ER]AX */
-http_request(uri, headers, data, type, post_type, size, out, osize)
-char* uri;
-unsigned char *data, *headers, *out;
-http_request_type type;
-http_post_type post_type;
-size_t size, osize;
+http_request(uri, headers, data, type, post_type, size, out, osize, debug)
+char *uri, *headers;
+unsigned char *data, *out;
+http_verb type;
+http_content_type post_type;
+size_t size, *osize;
+bool debug;
 {
     int r, s, len;
     char buf[1024], port[8], rq[size + 8192];
-    char *rq_type, *rq_headers;
+    char *rq_type = 0, *rq_headers = 0;
     url_parser_url_t *parsed_uri;
     struct HttpResponse rsp;
     struct http_roundtripper rt;
@@ -375,10 +375,14 @@ size_t size, osize;
     rsp.body = malloc(0); /* Need a valid pointer, but we can embiggen as we go */
     rsp.code = 0;
 
+    if (!headers)
+        headers = "";
+
     parsed_uri = malloc(sizeof (url_parser_url_t));
+    assert(parsed_uri);
     memset(parsed_uri, 0, sizeof (url_parser_url_t));
     r = parse_url(uri, false, parsed_uri);
-    
+
     if (r) {
         printf("Invalid URI pathspec\n");
         return -1;
@@ -390,12 +394,11 @@ size_t size, osize;
     if (!strcmp("https", parsed_uri->protocol) && !parsed_uri->port)
         parsed_uri->port = 443;
 
-    printf("connecting to %s on port %d...", parsed_uri->host, parsed_uri->port);
+    /*printf("connecting to %s on port %d...", parsed_uri->host, parsed_uri->port);*/
 
-    sprintf(port, "%d", parsed_uri->port);
+    snprintf(port, 8, "%d", parsed_uri->port);
 
-    if (!open_tls_sock(parsed_uri->host, port))
-    {
+    if (!open_tls_sock(parsed_uri->host, port)) {
         fprintf(stderr, "Failed to connect to %s\n", parsed_uri->host);
         goto exit;
     }
@@ -413,20 +416,29 @@ size_t size, osize;
 
     switch (post_type) {
         case HTTP_ENCODED:
-            snprintf(buf, "Content-Type: application/x-www-form-urlencoded\r\nContent-Length: %zu", size);
+            snprintf(buf, 1024, "Content-Type: application/x-www-form-urlencoded\r\nContent-Length: %zu", size);
             rq_headers = strdup(buf);
             break;
         case HTTP_FORM_DATA:
             rq_headers = "Content-Type: multipart/form-data;boundary=\"LOKI_POST_DATA\"\r\n";
             break;
+        case HTTP_JSON_DATA:
+            snprintf(buf, 1024, "Content-Type: application/json\r\nContent-Length: %zu", size);
+            rq_headers = strdup(buf);
         default:
+            rq_headers = "";
             break;
     }
 
     snprintf(rq, 8192, "%s %s HTTP/1.0\r\nHost: %s\r\nUser-Agent: %s\r\n%s%s\r\n\r\n", rq_type, parsed_uri->path, parsed_uri->host, client_ua, headers, rq_headers);
+    if (debug)
+        printf("Request headers:\n--->%s<---\n", rq);
+
     s = strlen(rq);
-    memcpy(rq + s, data, size);
-    s += size;
+    if (data && size) {
+        memcpy(rq + s, data, size);
+        s += size;
+    }
 
     while (r = mbedtls_ssl_write(&ssl, (unsigned char*) rq, s) <= 0) {
         if (r != MBEDTLS_ERR_SSL_WANT_READ && r != MBEDTLS_ERR_SSL_WANT_WRITE) {
@@ -456,18 +468,19 @@ size_t size, osize;
 
     if (out)
         memmove(out, rsp.body, rsp.size);
-    osize = rsp.size;
+    
+    *osize = rsp.size;
 
 exit:
     free_parsed_url(parsed_uri);
     r = rsp.code;
     http_free(&rt);
-    if(post_type == HTTP_ENCODED)
+    if (post_type == HTTP_ENCODED || post_type == HTTP_JSON_DATA)
         free(rq_headers);
     return r;
 }
 
-void client_cleanup() {
+void http_client_cleanup() {
     mbedtls_x509_crt_free(&cacert);
     mbedtls_ctr_drbg_free(&ctr_drbg);
     mbedtls_entropy_free(&entropy);
