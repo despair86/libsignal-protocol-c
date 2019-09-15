@@ -56,7 +56,8 @@ int http_parse_header_char(int* state, char ch)
     newstate = http_header_state[*state * 8 + code];
     *state = (newstate & 0xF);
 
-    switch (newstate) {
+    switch (newstate)
+    {
     case 0xC0: return http_header_status_done;
     case 0xC1: return http_header_status_done;
     case 0xC4: return http_header_status_store_keyvalue;

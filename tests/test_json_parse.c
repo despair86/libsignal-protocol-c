@@ -28,7 +28,7 @@ struct test
     char* name;
 };
 
-main(argc,argv)
+main(argc, argv)
 char **argv;
 {
     puts("JSON parser unit test");

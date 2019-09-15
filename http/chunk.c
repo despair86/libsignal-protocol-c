@@ -50,7 +50,8 @@ int http_parse_chunked(int* state, int *size, char ch)
     newstate = http_chunk_state[*state * 4 + code];
     *state = (newstate & 0xF);
 
-    switch (newstate) {
+    switch (newstate)
+    {
     case 0xC0:
         return *size != 0;
 

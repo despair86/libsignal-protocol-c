@@ -31,17 +31,17 @@ unsigned char* bufferToBase64(unsigned char* buf, size_t size)
     assert(tmp);
     size_t out_size;
     int r;
-    
+
     /* Get the size of the output */
     mbedtls_base64_encode(tmp, 0, &out_size, buf, size);
-    
+
     if (out_size >= size)
-        realloc(tmp, out_size+1);
-    
+        realloc(tmp, out_size + 1);
+
     assert(tmp);
     r = mbedtls_base64_encode(tmp, out_size, &out_size, buf, size);
     if (r)
-    {        
+    {
         fprintf(stderr, "Failed to encode binary data\n");
         /* May contain nuts, crush them before returning  */
         mbedtls_platform_zeroize(tmp, out_size);

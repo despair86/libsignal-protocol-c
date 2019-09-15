@@ -21,28 +21,28 @@
 #define __LABEL__ "P A G E R   v e r s i o n   v0.1"
 
 char loki_logo[] = {
-"        .o0l.\n"
-"       ;kNMNo.\n"
-"     ;kNMMXd'\n"
-"   ;kNMMXd'                 .ld:             ,ldxkkkdl,.     'dd;     ,odl.  ;dd\n"
-" ;kNMMXo.  'ol.             ,KMx.          :ONXkollokXN0c.   cNMo   .dNNx'   dMW\n"
-"dNMMM0,   ;KMMXo.           ,KMx.        .oNNx'      .dNWx.  :NMo .cKWk;     dMW\n"
-"'dXMMNk;  .;ONMMXo'         ,KMx.        :NMx.         oWWl  cNWd;ON0:.      oMW\n"
-"  'dXMMNk;.  ;kNMMXd'       ,KMx.        lWWl          :NMd  cNMNNMWd.       dMW\n"
-"    'dXMMNk;.  ;kNMMXd'     ,KMx.        :NMx.         oWWl  cNMKolKWO,      dMW\n"
-"      .oXMMK;   ,0MMMNd.    ,KMx.        .dNNx'      .dNWx.  cNMo  .dNNd.    dMW\n"
-"        .lo'  'dXMMNk;.     ,KMXxdddddl.   :ONNkollokXN0c.   cNMo    ;OWKl.  dMW\n"
-"            'dXMMNk;        .lddddddddo.     ,ldxkkkdl,.     'od,     .cdo;  ;dd\n"
-"          'dXMMNk;\n"
-"         .oNMNk;             " __LABEL__ "\n"
-"          .l0l.\n"
+    "        .o0l.\n"
+    "       ;kNMNo.\n"
+    "     ;kNMMXd'\n"
+    "   ;kNMMXd'                 .ld:             ,ldxkkkdl,.     'dd;     ,odl.  ;dd\n"
+    " ;kNMMXo.  'ol.             ,KMx.          :ONXkollokXN0c.   cNMo   .dNNx'   dMW\n"
+    "dNMMM0,   ;KMMXo.           ,KMx.        .oNNx'      .dNWx.  :NMo .cKWk;     dMW\n"
+    "'dXMMNk;  .;ONMMXo'         ,KMx.        :NMx.         oWWl  cNWd;ON0:.      oMW\n"
+    "  'dXMMNk;.  ;kNMMXd'       ,KMx.        lWWl          :NMd  cNMNNMWd.       dMW\n"
+    "    'dXMMNk;.  ;kNMMXd'     ,KMx.        :NMx.         oWWl  cNMKolKWO,      dMW\n"
+    "      .oXMMK;   ,0MMMNd.    ,KMx.        .dNNx'      .dNWx.  cNMo  .dNNd.    dMW\n"
+    "        .lo'  'dXMMNk;.     ,KMXxdddddl.   :ONNkollokXN0c.   cNMo    ;OWKl.  dMW\n"
+    "            'dXMMNk;        .lddddddddo.     ,ldxkkkdl,.     'od,     .cdo;  ;dd\n"
+    "          'dXMMNk;\n"
+    "         .oNMNk;             " __LABEL__ "\n"
+    "          .l0l.\n"
 };
 
-main(argc,argv)
+main(argc, argv)
 char** argv;
 {
     puts(loki_logo);
-    if(http_client_init())
+    if (http_client_init())
     {
         printf("HTTP Client User-Agent: %s\n", client_ua);
         http_client_cleanup();

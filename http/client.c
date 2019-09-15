@@ -56,7 +56,8 @@ unsigned char* ca_certs;
 /* imageboard ref just because */
 static char userAgent[] = "Loki_Pager/0.1 PolarSSL/2.16.2; U; ";
 
-typedef struct url_parser_url {
+typedef struct url_parser_url
+{
     char *protocol;
     char *host;
     int port;
@@ -69,7 +70,8 @@ typedef struct url_parser_url {
 static const char* seed = "Loki Pager HTTPS client";
 
 /* If this fails, do NOT use the HTTP client */
-bool http_client_init() {
+bool http_client_init()
+{
 #ifdef _WIN32
     DWORD version, major, minor, build;
 #endif
@@ -88,7 +90,8 @@ bool http_client_init() {
     mbedtls_ctr_drbg_init(&ctr_drbg);
 
     FILE* certs = fopen("rootcerts.pem", "rb");
-    if (!certs) {
+    if (!certs)
+    {
         fprintf(stderr, "root certs not found, aborting\n");
         return false;
     }
@@ -97,7 +100,8 @@ bool http_client_init() {
     s = fread(ca_certs, 1, 524288, certs);
     ca_certs[s] = 0;
     r = mbedtls_x509_crt_parse(&cacert, ca_certs, s + 1);
-    if (r < 0) {
+    if (r < 0)
+    {
         mbedtls_strerror(r, str, 512);
         printf("parse ca cert store failed\n  !  mbedtls_x509_crt_parse returned: %s\n\n", str);
         return false;
@@ -125,7 +129,8 @@ bool http_client_init() {
     return true;
 }
 
-static bool initTLS() {
+static bool initTLS()
+{
     /* Clear only previous connection state */
     mbedtls_net_init(&server_fd);
     mbedtls_ssl_init(&ssl);
@@ -179,22 +184,31 @@ url_parser_url_t *parsed_url;
 
     token_host = strtok_r(host_port, ":", &host_token_ptr);
     parsed_url->host_ip = NULL;
-    if (token_host) {
+    if (token_host)
+    {
         parsed_url->host = strdup(token_host);
 
-        if (verify_host) {
+        if (verify_host)
+        {
             struct hostent *host;
             host = gethostbyname(parsed_url->host);
-            if (host != NULL) {
+            if (host != NULL)
+            {
                 parsed_url->host_ip = inet_ntoa(* (struct in_addr *) host->h_addr);
                 parsed_url->host_exists = 1;
-            } else {
+            }
+            else
+            {
                 parsed_url->host_exists = 0;
             }
-        } else {
+        }
+        else
+        {
             parsed_url->host_exists = -1;
         }
-    } else {
+    }
+    else
+    {
         parsed_url->host_exists = -1;
         parsed_url->host = NULL;
     }
@@ -211,7 +225,8 @@ url_parser_url_t *parsed_url;
 
     token = strtok_r(NULL, "?", &token_ptr);
     parsed_url->path = NULL;
-    if (token) {
+    if (token)
+    {
         path = (char *) realloc(path, sizeof (char) * (strlen(token) + 2));
         memset(path, 0, sizeof (char) * (strlen(token) + 2));
         strcpy(path, "/");
@@ -220,16 +235,21 @@ url_parser_url_t *parsed_url;
         parsed_url->path = strdup(path);
 
         free(path);
-    } else {
+    }
+    else
+    {
         parsed_url->path = (char *) malloc(sizeof (char) * 2);
         strcpy(parsed_url->path, "/");
     }
 
     token = strtok_r(NULL, "?", &token_ptr);
-    if (token) {
+    if (token)
+    {
         parsed_url->query_string = (char *) malloc(sizeof (char) * (strlen(token) + 1));
         strncpy(parsed_url->query_string, token, strlen(token));
-    } else {
+    }
+    else
+    {
         parsed_url->query_string = NULL;
     }
 
@@ -259,13 +279,15 @@ char* host, *port;
     unsigned int flags;
 
     r = mbedtls_net_connect(&server_fd, host, port, MBEDTLS_NET_PROTO_TCP);
-    if (r) {
+    if (r)
+    {
         printf("error - failed to connect to server: %d\n", r);
         return false;
     }
 
     r = mbedtls_ssl_config_defaults(&conf, MBEDTLS_SSL_IS_CLIENT, MBEDTLS_SSL_TRANSPORT_STREAM, MBEDTLS_SSL_PRESET_DEFAULT);
-    if (r) {
+    if (r)
+    {
         printf("error - failed to set TLS options: %d\n", r);
         return false;
     }
@@ -275,27 +297,32 @@ char* host, *port;
     mbedtls_ssl_conf_rng(&conf, mbedtls_ctr_drbg_random, &ctr_drbg);
 
     r = mbedtls_ssl_setup(&ssl, &conf);
-    if (r) {
+    if (r)
+    {
         printf("error - failed to setup TLS session: %d\n", r);
         return false;
     }
 
     r = mbedtls_ssl_set_hostname(&ssl, host);
 
-    if (r) {
+    if (r)
+    {
         printf("error - failed to perform SNI: %d\n", r);
         return false;
     }
 
     mbedtls_ssl_set_bio(&ssl, &server_fd, mbedtls_net_send, mbedtls_net_recv, NULL);
 
-    while ((r = mbedtls_ssl_handshake(&ssl)) != 0) {
-        if (r != MBEDTLS_ERR_SSL_WANT_READ && r != MBEDTLS_ERR_SSL_WANT_WRITE) {
+    while ((r = mbedtls_ssl_handshake(&ssl)) != 0)
+    {
+        if (r != MBEDTLS_ERR_SSL_WANT_READ && r != MBEDTLS_ERR_SSL_WANT_WRITE)
+        {
             printf(" failed\n  ! mbedtls_ssl_handshake returned -0x%x\n\n", -r);
             return false;
         }
     }
-    if ((flags = mbedtls_ssl_get_verify_result(&ssl)) != 0) {
+    if ((flags = mbedtls_ssl_get_verify_result(&ssl)) != 0)
+    {
         char vrfy_buf[512];
         printf(" failed\n");
         mbedtls_x509_crt_verify_info(vrfy_buf, sizeof (vrfy_buf), "  ! ", flags);
@@ -306,7 +333,8 @@ char* host, *port;
 }
 
 /* Response data/funcs */
-struct HttpResponse {
+struct HttpResponse
+{
     char* body;
     int code;
     size_t size;
@@ -383,7 +411,8 @@ bool debug;
     memset(parsed_uri, 0, sizeof (url_parser_url_t));
     r = parse_url(uri, false, parsed_uri);
 
-    if (r) {
+    if (r)
+    {
         printf("Invalid URI pathspec\n");
         return -1;
     }
@@ -398,36 +427,39 @@ bool debug;
 
     snprintf(port, 8, "%d", parsed_uri->port);
 
-    if (!open_tls_sock(parsed_uri->host, port)) {
+    if (!open_tls_sock(parsed_uri->host, port))
+    {
         fprintf(stderr, "Failed to connect to %s\n", parsed_uri->host);
         goto exit;
     }
 
-    switch (type) {
-        case GET:
-            rq_type = "GET";
-            break;
-        case POST:
-            rq_type = "POST";
-            break;
-        default:
-            break;
+    switch (type)
+    {
+    case GET:
+        rq_type = "GET";
+        break;
+    case POST:
+        rq_type = "POST";
+        break;
+    default:
+        break;
     }
 
-    switch (post_type) {
-        case HTTP_ENCODED:
-            snprintf(buf, 1024, "Content-Type: application/x-www-form-urlencoded\r\nContent-Length: %zu", size);
-            rq_headers = strdup(buf);
-            break;
-        case HTTP_FORM_DATA:
-            rq_headers = "Content-Type: multipart/form-data;boundary=\"LOKI_POST_DATA\"\r\n";
-            break;
-        case HTTP_JSON_DATA:
-            snprintf(buf, 1024, "Content-Type: application/json\r\nContent-Length: %zu", size);
-            rq_headers = strdup(buf);
-        default:
-            rq_headers = "";
-            break;
+    switch (post_type)
+    {
+    case HTTP_ENCODED:
+        snprintf(buf, 1024, "Content-Type: application/x-www-form-urlencoded\r\nContent-Length: %zu", size);
+        rq_headers = strdup(buf);
+        break;
+    case HTTP_FORM_DATA:
+        rq_headers = "Content-Type: multipart/form-data;boundary=\"LOKI_POST_DATA\"\r\n";
+        break;
+    case HTTP_JSON_DATA:
+        snprintf(buf, 1024, "Content-Type: application/json\r\nContent-Length: %zu", size);
+        rq_headers = strdup(buf);
+    default:
+        rq_headers = "";
+        break;
     }
 
     snprintf(rq, 8192, "%s %s HTTP/1.0\r\nHost: %s\r\nUser-Agent: %s\r\n%s%s\r\n\r\n", rq_type, parsed_uri->path, parsed_uri->host, client_ua, headers, rq_headers);
@@ -435,13 +467,16 @@ bool debug;
         printf("Request headers:\n--->%s<---\n", rq);
 
     s = strlen(rq);
-    if (data && size) {
+    if (data && size)
+    {
         memcpy(rq + s, data, size);
         s += size;
     }
 
-    while (r = mbedtls_ssl_write(&ssl, (unsigned char*) rq, s) <= 0) {
-        if (r != MBEDTLS_ERR_SSL_WANT_READ && r != MBEDTLS_ERR_SSL_WANT_WRITE) {
+    while (r = mbedtls_ssl_write(&ssl, (unsigned char*) rq, s) <= 0)
+    {
+        if (r != MBEDTLS_ERR_SSL_WANT_READ && r != MBEDTLS_ERR_SSL_WANT_WRITE)
+        {
             printf("failed! error %d\n\n", r);
             goto exit;
         }
@@ -449,18 +484,22 @@ bool debug;
 
     len = 0;
     s = 0;
-    do {
+    do
+    {
         r = mbedtls_ssl_read(&ssl, (unsigned char*) buf, 1024);
         if (r <= 0)
             break;
-        else {
+        else
+        {
             s = http_data(&rt, buf, r, &len);
         }
-    } while (r && s);
+    }
+    while (r && s);
 
     mbedtls_ssl_close_notify(&ssl);
 
-    if (rsp.code != 200) {
+    if (rsp.code != 200)
+    {
         printf("An error occurred.\n");
         printf("Server response:\n%s", rsp.body);
         goto exit;
@@ -468,7 +507,7 @@ bool debug;
 
     if (out)
         memmove(out, rsp.body, rsp.size);
-    
+
     *osize = rsp.size;
 
 exit:
@@ -480,7 +519,8 @@ exit:
     return r;
 }
 
-void http_client_cleanup() {
+void http_client_cleanup()
+{
     mbedtls_x509_crt_free(&cacert);
     mbedtls_ctr_drbg_free(&ctr_drbg);
     mbedtls_entropy_free(&entropy);

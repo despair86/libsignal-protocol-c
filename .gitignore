@@ -17,6 +17,7 @@ install_manifest.txt
 compile_commands.json
 CTestTestfile.cmake
 _deps
+nbproject/
 
 # OS generated files
 .DS_Store*
@@ -29,3 +30,24 @@ Thumbs.db
 core
 *.log
 *.zip
+pager
+rootcerts.pem
+libsignal-protocol-c.pc
+crypto_benchmark
+crypto_selftest
+test_curve25519
+test_device_consistency
+test_fingerprint
+test_hkdf
+test_json_parser
+test_key_helper
+test_protocol
+test_ratchet
+test_sender_key_record
+test_session_builder
+test_session_record
+test_simultaneous_initiate
+test_web_client
+test_session_cipher
+test_group_cipher
+

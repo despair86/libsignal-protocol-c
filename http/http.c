@@ -48,7 +48,7 @@ static void grow_scratch(struct http_roundtripper* rt, int size)
     if (nsize < size)
         nsize = size;
 
-	rt->scratch = (char*)rt->funcs.realloc_scratch(rt->opaque, rt->scratch, nsize);
+    rt->scratch = (char*) rt->funcs.realloc_scratch(rt->opaque, rt->scratch, nsize);
     rt->nscratch = nsize;
 }
 
@@ -57,7 +57,8 @@ static int min(int a, int b)
     return a > b ? b : a;
 }
 
-enum http_roundtripper_state {
+enum http_roundtripper_state
+{
     http_roundtripper_header,
     http_roundtripper_chunk_header,
     http_roundtripper_chunk_data,
@@ -84,7 +85,8 @@ void http_init(struct http_roundtripper* rt, struct http_funcs funcs, void* opaq
 
 void http_free(struct http_roundtripper* rt)
 {
-    if (rt->scratch) {
+    if (rt->scratch)
+    {
         rt->funcs.realloc_scratch(rt->opaque, rt->scratch, 0);
         rt->scratch = 0;
     }
@@ -93,18 +95,23 @@ void http_free(struct http_roundtripper* rt)
 int http_data(struct http_roundtripper* rt, const char* data, int size, int* read)
 {
     const int initial_size = size;
-    while (size) {
-        switch (rt->state) {
+    while (size)
+    {
+        switch (rt->state)
+        {
         case http_roundtripper_header:
-            switch (http_parse_header_char(&rt->parsestate, *data)) {
+            switch (http_parse_header_char(&rt->parsestate, *data))
+            {
             case http_header_status_done:
                 rt->funcs.code(rt->opaque, rt->code);
                 if (rt->parsestate != 0)
                     rt->state = http_roundtripper_error;
-                else if (rt->chunked) {
+                else if (rt->chunked)
+                {
                     rt->contentlength = 0;
                     rt->state = http_roundtripper_chunk_header;
-                } else if (rt->contentlength == 0)
+                }
+                else if (rt->contentlength == 0)
                     rt->state = http_roundtripper_close;
                 else if (rt->contentlength > 0)
                     rt->state = http_roundtripper_raw_data;
@@ -126,14 +133,15 @@ int http_data(struct http_roundtripper* rt, const char* data, int size, int* rea
 
             case http_header_status_value_character:
                 grow_scratch(rt, rt->nkey + rt->nvalue + 1);
-                rt->scratch[rt->nkey+rt->nvalue] = *data;
+                rt->scratch[rt->nkey + rt->nvalue] = *data;
                 ++rt->nvalue;
                 break;
 
             case http_header_status_store_keyvalue:
                 if (rt->nkey == 17 && 0 == strncmp(rt->scratch, "transfer-encoding", rt->nkey))
                     rt->chunked = (rt->nvalue == 7 && 0 == strncmp(rt->scratch + rt->nkey, "chunked", rt->nvalue));
-                else if (rt->nkey == 14 && 0 == strncmp(rt->scratch, "content-length", rt->nkey)) {
+                else if (rt->nkey == 14 && 0 == strncmp(rt->scratch, "content-length", rt->nkey))
+                {
                     int ii, end;
                     rt->contentlength = 0;
                     for (ii = rt->nkey, end = rt->nkey + rt->nvalue; ii != end; ++ii)
@@ -152,7 +160,8 @@ int http_data(struct http_roundtripper* rt, const char* data, int size, int* rea
             break;
 
         case http_roundtripper_chunk_header:
-            if (!http_parse_chunked(&rt->parsestate, &rt->contentlength, *data)) {
+            if (!http_parse_chunked(&rt->parsestate, &rt->contentlength, *data))
+            {
                 if (rt->contentlength == -1)
                     rt->state = http_roundtripper_error;
                 else if (rt->contentlength == 0)
@@ -165,21 +174,24 @@ int http_data(struct http_roundtripper* rt, const char* data, int size, int* rea
             ++data;
             break;
 
-        case http_roundtripper_chunk_data: {
+        case http_roundtripper_chunk_data:
+        {
             const int chunksize = min(size, rt->contentlength);
             append_body(rt, data, chunksize);
             rt->contentlength -= chunksize;
             size -= chunksize;
             data += chunksize;
 
-            if (rt->contentlength == 0) {
+            if (rt->contentlength == 0)
+            {
                 rt->contentlength = 1;
                 rt->state = http_roundtripper_chunk_header;
             }
         }
-        break;
+            break;
 
-        case http_roundtripper_raw_data: {
+        case http_roundtripper_raw_data:
+        {
             const int chunksize = min(size, rt->contentlength);
             append_body(rt, data, chunksize);
             rt->contentlength -= chunksize;
@@ -189,26 +201,30 @@ int http_data(struct http_roundtripper* rt, const char* data, int size, int* rea
             if (rt->contentlength == 0)
                 rt->state = http_roundtripper_close;
         }
-        break;
+            break;
 
-        case http_roundtripper_unknown_data: {
+        case http_roundtripper_unknown_data:
+        {
             if (size == 0)
                 rt->state = http_roundtripper_close;
-            else {
+            else
+            {
                 append_body(rt, data, size);
                 size -= size;
                 data += size;
             }
         }
-        break;
+            break;
 
         case http_roundtripper_close:
         case http_roundtripper_error:
             break;
         }
 
-        if (rt->state == http_roundtripper_error || rt->state == http_roundtripper_close) {
-            if (rt->scratch) {
+        if (rt->state == http_roundtripper_error || rt->state == http_roundtripper_close)
+        {
+            if (rt->scratch)
+            {
                 rt->funcs.realloc_scratch(rt->opaque, rt->scratch, 0);
                 rt->scratch = 0;
             }
