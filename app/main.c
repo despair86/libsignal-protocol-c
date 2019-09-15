@@ -21,7 +21,7 @@
 #include <windows.h>
 #endif
 #include "http.h"
-#define __LABEL__ "P A G E R   v e r s i o n   v0.1"
+#define __LABEL__ "P A G E R   v e r s i o n   v 0 . 1"
 
 char loki_logo[] = {
     "        .o0l.\n"

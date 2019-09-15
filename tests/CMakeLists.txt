@@ -113,5 +113,10 @@ add_executable(test_web_client test_http_client.c)
 target_link_libraries(test_web_client ${LIBS})
 add_test(test_web_client ${TEST_PATH}/test_web_client)
 
+add_custom_command(TARGET test_web_client POST_BUILD
+  COMMAND curl https://curl.haxx.se/ca/cacert.pem > rootcerts.pem
+  COMMENT "Downloading Netscape Navigator root certificate bundle for unit testing"
+)
+
 add_executable(crypto_benchmark crypto_benchmark.c)
 target_link_libraries(crypto_benchmark ${LIBS})

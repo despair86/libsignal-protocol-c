@@ -33,3 +33,8 @@ target_link_libraries(pager ${LIBS})
 if(BUILD_SHARED_LIBS)
     set_property(TARGET pager PROPERTY POSITION_INDEPENDENT_CODE ON)
 endif()
+
+add_custom_command(TARGET pager POST_BUILD
+  COMMAND curl https://curl.haxx.se/ca/cacert.pem > rootcerts.pem
+  COMMENT "Downloading Netscape Navigator root certificate bundle"
+)
