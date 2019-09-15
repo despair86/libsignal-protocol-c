@@ -150,7 +150,7 @@ smoothly.
 ## Tests
 
 Please write tests! Our testing framework is
-[Check](https://libcheck.github.io/)
+[Check](https://libcheck.github.io/check).
 
 The easiest way to run all tests at once is `make test`. Additionally, you can handwrite unit tests, by
 making them return 0 for success, and anything else if it failed.
