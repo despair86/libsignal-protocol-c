@@ -1,73 +1,37 @@
+# Loki Messenger
+
+Loki Messenger allows for truly decentralised, end to end, and private encrypted chats. Loki Messenger is built to handle both online and fully Asynchronous offline messages. Loki messenger implements the Signal protocol for message encryption. Our Client interface is a fork of [Signal Messenger](https://signal.org/). All communication that passes through Loki messenger is routed through [Lokinet](https://github.com/loki-project/loki-network).
+
+## Summary
+
+Loki messenger integrates directly with Loki [Service Nodes](https://lokidocs.com/ServiceNodes/SNOverview/), which are a set of distributed, decentralized and Sybil resistant nodes. Service Nodes act as both federated servers which store messages offline, and a set of nodes which allow for onion routing functionality obfuscating users IP Addresses. For a full understanding of how Loki messenger works, read the [Loki whitepaper](https://loki.network/whitepaper).
+
+**Online Messages**
+
+If Alice and Bob are both online they can simply resolve each others public keys, to introduction sets, this functionality is handled by interfacing with [Lokinet](https://github.com/loki-project/loki-network). With the appropriate introduction sets Alice and Bob can create a path and using onion routing pass messages through the Loki network without giving away personally identifiable information like their IP address.
+
+**Offline messages**
+
+Offline messaging uses Swarms, given any users public key the user can resolve a public key to a specific grouping of Service Nodes (AKA Swarm) each user in Loki Messenger belongs to a Swarm. When routing a message offline the user selects a Service node in the destination users Swarm, when the user comes online they query any node in their Swarm, if the Swarm is holding any messages for the user they disseminate those messages to the user.
+
+![Swarm Messaging](https://i.imgur.com/o13Knds.png)
+
+Spam protections for Loki Messenger are based on a Proof of Work which is attached to any message that exceeds a default size or Time To Live, this process is discussed further in the [Loki whitepaper](https://loki.network/whitepaper).
+
+## Want to Contribute? Found a Bug or Have a feature request?
+
+Please search for any [existing issues](https://github.com/despair86/loki-pager/issues) that describe your bugs in order to avoid duplicate submissions. Submissions can be made by making a pull request to our development branch, if you don't know where to start contributing , try reading the Github issues page for ideas.
+
+## Build instruction
+
+Build instructions can be found in [CONTRIBUTING.md](CONTRIBUTING.md).
+
+(from old README)
+
 # Overview
 
 This is a ratcheting forward secrecy protocol that works in synchronous and asynchronous messaging 
 environments. See the [Java library](https://github.com/whispersystems/libsignal-protocol-java) for more details.
-
-# Building libsignal-protocol-c
-
-## Development host setup
-
-### Build dependencies
-
-* [CMake](https://cmake.org/) 2.8.4 or higher
-* [Check *1](https://libcheck.github.io/check/)
-* [LCOV *2](http://ltp.sourceforge.net/coverage/lcov.php)
-
-Most of these dependencies are required just for the unit test suite and
-development of the library itself. When integrating into actual applications,
-you should not need anything beyond CMake. Alternatively, you may integrate
-the code using a build system of your choice.
-Items marked with *1 are required for tests, with *2 are additionally required for code coverage.
-
-### Setting up a fresh source tree
-
-    $ cd /path/to/libsignal-protocol-c
-    $ mkdir build
-    $ cd build
-    $ cmake -DCMAKE_BUILD_TYPE=Debug ..
-    $ make
-
-### Running the unit tests
-
-    $ cd /path/to/libsignal-protocol-c/build
-    $ cmake -DCMAKE_BUILD_TYPE=Debug -DBUILD_TESTING=1 ..
-    $ cd tests
-    $ make
-    $ cd ..
-    $ ctest
-
-### Creating the code coverage report
-
-    $ cd /path/to/libsignal-protocol-c/build
-    $ cmake -DCMAKE_BUILD_TYPE=Debug -DBUILD_TESTING=1 -DCOVERAGE=1 ..
-    $ make coverage
-
-The generated code coverage report can be found in:
-`/path/to/libsignal-protocol-c/build/coverage`
-
-### Eclipse project setup
-
-CMake provides a tutorial on Eclipse project setup here:
-https://cmake.org/Wiki/CMake:Eclipse_UNIX_Tutorial
-
-It is recommended to follow the more manual "Option 2," since the Eclipse
-project generator built into CMake tends to be outdated and leads you toward
-a very awkward and occasionally broken project configuration.
-
-### Protocol Buffers compiler
-
-This project uses serialization code based on [Protocol Buffers](https://github.com/google/protobuf).
-Since the official library does not support C, the [protobuf-c](https://github.com/protobuf-c/protobuf-c)
-generator is used instead. For the sake of convenience, the generated code and its dependencies are
-included in the source tree. The generated code can be regenerated at any time by installing the two
-mentioned packages and running "make" in the "protobuf/" subdirectory.
-
-## Target platforms
-
-CMake toolchain files have been included from the following sources:
-
-* [iOS](https://code.google.com/archive/p/ios-cmake)
-* [BlackBerry 10](https://github.com/blackberry/OGRE/blob/master/src/CMake/toolchain/blackberry.toolchain.cmake)
 
 # Using libsignal-protocol-c
 

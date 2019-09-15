@@ -17,6 +17,9 @@
 
 /* Entry point for Loki Pager text-mode client for Loki communications network */
 #include <stdio.h>
+#ifdef _WIN32
+#include <windows.h>
+#endif
 #include "http.h"
 #define __LABEL__ "P A G E R   v e r s i o n   v0.1"
 
