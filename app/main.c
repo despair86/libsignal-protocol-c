@@ -20,6 +20,15 @@
 #ifdef _WIN32
 #include <windows.h>
 #endif
+
+/* On Linux only ncurses exists, duh */
+#if defined(__linux__) || defined(_WIN32)
+#include <ncurses/curses.h>
+#else
+/* We can use AT&T or BSD curses too */
+#include <curses.h>
+#endif
+
 #include "http.h"
 #define __LABEL__ "P A G E R   v e r s i o n   v 0 . 1"
 
@@ -38,21 +47,40 @@ char loki_logo[] = {
     "            'dXMMNk;        .lddddddddo.     ,ldxkkkdl,.     'od,     .cdo;  ;dd\n"
     "          'dXMMNk;\n"
     "         .oNMNk;             " __LABEL__ "\n"
-    "          .l0l.\n"
+    "          .l0l."
 };
 
 main(argc, argv)
 char** argv;
 {
-    puts(loki_logo);
+    int x,y;
+    initscr();
+    start_color();
+    init_pair(1, COLOR_GREEN, COLOR_BLACK);
+    init_pair(2, COLOR_WHITE, COLOR_BLACK);
+    for(int i = 0; i < sizeof(loki_logo); i++)
+    {
+        if (loki_logo[i] == 0)
+            break;
+        getyx(stdscr, y, x);
+        if (x > 25)
+            addch(loki_logo[i]|COLOR_PAIR(2));
+        else
+            addch(loki_logo[i]|COLOR_PAIR(1));
+    }
+    printw("\n\n");
+    refresh();
     if (http_client_init())
     {
-        printf("HTTP Client User-Agent: %s\n", client_ua);
+        printw("HTTP Client User-Agent: %s\n", client_ua);
+        refresh();
         http_client_cleanup();
     }
     else
     {
-        printf("failed to start web client\n");
+        printw("failed to start web client\n");
+        refresh();
     }
+    endwin();
     return 0;
 }

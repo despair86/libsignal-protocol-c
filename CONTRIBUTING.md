@@ -46,6 +46,7 @@ Then you need `git`, if you don't have that yet: https://git-scm.com/
       (See Programs and Features/Optional Features)
     * Install Windows SDK version 7.0: https://developer.microsoft.com/en-us/windows/downloads/sdk-archive
 2.  Install CMake from https://cmake.org/. 32-bit build is recommended even in 64-bit installs if core memory is at a premium on your site.
+3.  Install cURL from https://curl.haxx.se, we use it only to download the Netscape Navigator root cert bundle, manually grab from: https://curl.haxx.se/ca/cacert.pem and save as `rootcerts.pem`
 
 If you are developing on an older version of Windows, you should probably get the last version of Microsoft C available for your system, plus the Windows Server 2003 R2 SDK.
 
@@ -56,15 +57,16 @@ If you are developing on an older version of Windows, you should probably get th
 1.  Install `g++`
 1.  Install `make`
 1.  Install `cmake`
+1.  Install `curl`
 
 ### UCB UNIX (OpenBSD, NetBSD, FreeBSD, etc)
 
-The C compilation system should already be available (try executing `cc`), optionally install Ninja, and make sure CMake is available.
+The C compilation system should already be available (try executing `cc`), optionally install Ninja, and make sure CMake and cURRL are available.
 
 ### Solaris 2.x
 
 Install Oracle Workshop from https://www.oracle.com/technetwork/server-storage/developerstudio/overview/index.html, or
-install CMake and GCC or Clang from IPS. For SVR4 packages, the UNC SunSITE may have GCC or Clang packages for v2.5-2.10 available.
+install CMake and GCC or Clang from IPS. For SVR4 packages, the [UNC SunSITE](http://ibiblio.org) may have GCC or Clang packages for v2.5-2.10 available.
 
 ## Development host setup (All platforms)
 
