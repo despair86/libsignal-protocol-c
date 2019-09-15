@@ -116,7 +116,9 @@ bool http_client_init()
     if (version < 0x80000000)
         build = (DWORD) (HIWORD(version));
     ua = malloc(512);
-    snprintf(ua, 512, "%sWindows NT %d.%d", userAgent, major, minor);
+    char *arch = getenv("PROCESSOR_ARCHITECTURE");
+    snprintf(ua, 512, "%sWindows NT %u.%u; %s", userAgent, major, minor, arch);
+    client_ua = ua;
 #else
     ua = malloc(512);
     assert(ua);
