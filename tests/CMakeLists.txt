@@ -27,6 +27,10 @@ else()
   set(TEST_PATH ${CMAKE_CURRENT_BINARY_DIR})
 endif()
 
+if(WIN32)
+set(CHECK_LDFLAGS ${CHECK_LIBRARIES})
+endif()
+
 set(LIBS ${LIBS}
 	${M_LIB}
 	${CHECK_LDFLAGS}
