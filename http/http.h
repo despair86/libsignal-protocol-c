@@ -30,7 +30,21 @@
 #if defined(__cplusplus)
 extern "C" {
 #endif
+#include <stdbool.h>
 
+typedef enum 
+{
+    GET,
+    POST
+} http_request_type;
+
+typedef enum
+{
+    HTTP_ENCODED,
+    HTTP_FORM_DATA
+} http_post_type;
+
+char* client_ua;
 /**
  * Callbacks for handling response data.
  *  realloc_scratch - reallocate memory, cannot fail. There will only
@@ -85,6 +99,8 @@ int http_data(struct http_roundtripper* rt, const char* data, int size, int* rea
  * not return non-zero, the results of this function are undefined.
  */
 int http_iserror(struct http_roundtripper* rt);
+bool client_init();
+void client_cleanup();
 
 #if defined(__cplusplus)
 }

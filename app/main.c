@@ -17,6 +17,7 @@
 
 /* Entry point for Loki Pager text-mode client for Loki communications network */
 #include <stdio.h>
+#include "http.h"
 #define __LABEL__ "P A G E R   v e r s i o n   v0.1"
 
 char loki_logo[] = {
@@ -41,5 +42,14 @@ main(argc,argv)
 char** argv;
 {
     puts(loki_logo);
+    if(client_init())
+    {
+        printf("HTTP Client User-Agent: %s\n", client_ua);
+        client_cleanup();
+    }
+    else
+    {
+        printf("failed to start web client\n");
+    }
     return 0;
 }

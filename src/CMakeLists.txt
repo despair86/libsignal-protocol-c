@@ -70,7 +70,7 @@ add_library(signal-protocol-c
 	$<TARGET_OBJECTS:curve25519>
 	$<TARGET_OBJECTS:protobuf-c>
         $<TARGET_OBJECTS:mbedtls>
-        $<TARGET_OBJECTS:jsmn>
+        $<TARGET_OBJECTS:json>
         $<TARGET_OBJECTS:http>
 )
 

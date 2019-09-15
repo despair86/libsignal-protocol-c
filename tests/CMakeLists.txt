@@ -2,7 +2,7 @@ enable_testing()
 find_library(M_LIB m)
 find_package(Check 0.9.10 REQUIRED)
 find_package(Threads)
-include_directories(${CHECK_INCLUDE_DIRS})
+include_directories(. ../src ../json ../crypto ${CHECK_INCLUDE_DIRS})
 
 IF(CMAKE_COMPILER_IS_GNUCC OR CMAKE_C_COMPILER_ID MATCHES "Clang")
   SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-unused-function")
@@ -39,8 +39,6 @@ set(common_SRCS
 	test_common.c
 	test_common.h
 )
-
-include_directories(. ../src ../crypto)
 
 set(common_SRCS ${common_SRCS}
 	test_common_mbedtls.c
@@ -97,3 +95,14 @@ add_test(test_fingerprint ${TEST_PATH}/test_fingerprint)
 add_executable(test_device_consistency test_device_consistency.c ${common_SRCS})
 target_link_libraries(test_device_consistency ${LIBS})
 add_test(test_device_consistency ${TEST_PATH}/test_device_consistency)
+
+add_executable(crypto_selftest crypto_selftest.c)
+target_link_libraries(crypto_selftest ${LIBS})
+add_test(test_crypto_svc_provider ${TEST_PATH}/crypto_selftest)
+
+add_executable(test_json_parser test_json_parse.c)
+target_link_libraries(test_json_parser ${LIBS})
+add_test(test_json_parser ${TEST_PATH}/test_json_parser)
+
+add_executable(crypto_benchmark crypto_benchmark.c)
+target_link_libraries(crypto_benchmark ${LIBS})

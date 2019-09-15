@@ -20,7 +20,7 @@ set(LIBS ${LIBS}
 	signal-protocol-c
 )
 
-include_directories(. ../src ../crypto)
+include_directories(. ../src ../http ../crypto)
 
 set(loki_pager_app_SRCS
 main.c

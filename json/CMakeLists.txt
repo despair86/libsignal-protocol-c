@@ -13,14 +13,13 @@ IF(CMAKE_C_COMPILER_ID MATCHES "Clang")
     SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-shorten-64-to-32")
 ENDIF(CMAKE_C_COMPILER_ID MATCHES "Clang")
 
-set(jsmn_SRCS
-jsmn.c
-json.c
+set(json_SRCS
+cjson.c
 )
 
-add_library(jsmn OBJECT ${jsmn_SRCS})
+add_library(json OBJECT ${json_SRCS})
 
 # Add -fPIC flag
 if(BUILD_SHARED_LIBS)
-    set_property(TARGET jsmn PROPERTY POSITION_INDEPENDENT_CODE ON)
+    set_property(TARGET json PROPERTY POSITION_INDEPENDENT_CODE ON)
 endif()

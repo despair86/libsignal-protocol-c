@@ -15,6 +15,9 @@ ENDIF(CMAKE_C_COMPILER_ID MATCHES "Clang")
 
 include_directories(mbedtls)
 
+IF(BUILD_TESTING)
+	add_definitions(-DMBEDTLS_SELF_TEST)
+ENDIF(BUILD_TESTING)
 
 set(mbedtls_SRCS
 aes.c

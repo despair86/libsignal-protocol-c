@@ -13,10 +13,13 @@ IF(CMAKE_C_COMPILER_ID MATCHES "Clang")
     SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-shorten-64-to-32")
 ENDIF(CMAKE_C_COMPILER_ID MATCHES "Clang")
 
+include_directories(. ../src ../crypto)
+
 set(http_SRCS
 http.c
 chunk.c
 header.c
+client.c
 )
 
 add_library(http OBJECT ${http_SRCS})
