@@ -67,7 +67,7 @@ If you are developing on an older version of Windows, you should probably get th
 
 ### UCB UNIX (OpenBSD, NetBSD, FreeBSD, etc)
 
-The C compilation system should already be available (try executing `cc`), optionally install Ninja, and make sure CMake and cURRL are available.
+The C compilation system should already be available (try executing `cc`), optionally install Ninja, and make sure CMake and cURL are available.
 
 We can use ancient BSD curses if that's all you have, so long as it implements something resembling X/Open curses.
 
