@@ -22,7 +22,7 @@
 #endif
 
 /* On Linux only ncurses exists, duh */
-#if defined(__linux__) || defined(_WIN32)
+#if defined(__linux__)
 #include <ncurses/curses.h>
 #else
 /* We can use AT&T or BSD curses too */
