@@ -131,6 +131,9 @@ bool http_client_init()
     assert(ua);
     struct utsname sys_name;
     uname(&sys_name);
+#if (__x86_64__ || __amd64__) && defined(__sun)
+    snprintf(sys_name.machine, _SYS_NMLN, "x86_64");
+#endif
     snprintf(ua, 512, "%s%s %s; %s", userAgent, sys_name.sysname, sys_name.release, sys_name.machine);
     client_ua = ua;
 #endif

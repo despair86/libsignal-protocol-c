@@ -82,11 +82,9 @@ char** argv;
         printw("failed to start web client\n");
         refresh();
     }
-#ifdef _WIN32
     printw("\nPress any key to exit\n");
     refresh();
     getch();
-#endif
     endwin();
     return 0;
 }
