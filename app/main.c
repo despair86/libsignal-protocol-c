@@ -53,12 +53,13 @@ char loki_logo[] = {
 main(argc, argv)
 char** argv;
 {
-    int x,y;
+    int x,y,i;
+
     initscr();
     start_color();
     init_pair(1, COLOR_GREEN, COLOR_BLACK);
     init_pair(2, COLOR_WHITE, COLOR_BLACK);
-    for(int i = 0; i < sizeof(loki_logo); i++)
+    for(i = 0; i < sizeof(loki_logo); i++)
     {
         if (loki_logo[i] == 0)
             break;

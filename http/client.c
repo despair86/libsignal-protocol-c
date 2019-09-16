@@ -19,12 +19,17 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <stdbool.h>
 #include <assert.h>
 #include <string.h>
+#include <stdint.h>
 #ifdef _WIN32
 #include <windows.h>
 #include <wincrypt.h>
+#ifdef _MSC_VER
+#include <malloc.h>
+char *
+strtok_r(char * __restrict s, const char * __restrict delim, char ** __restrict last);
+#endif
 #else
 #include <sys/utsname.h>
 #include <sys/types.h>
@@ -74,11 +79,13 @@ bool http_client_init()
 {
 #ifdef _WIN32
     DWORD version, major, minor, build;
+	char* arch;
 #endif
     int r;
     char str[512];
     char* ua;
     size_t s;
+	FILE* certs;
 
     mbedtls_net_init(&server_fd);
     mbedtls_ssl_init(&ssl);
@@ -89,7 +96,7 @@ bool http_client_init()
     mbedtls_entropy_init(&entropy);
     mbedtls_ctr_drbg_init(&ctr_drbg);
 
-    FILE* certs = fopen("rootcerts.pem", "rb");
+    certs = fopen("rootcerts.pem", "rb");
     if (!certs)
     {
         fprintf(stderr, "root certs not found, aborting\n");
@@ -116,7 +123,7 @@ bool http_client_init()
     if (version < 0x80000000)
         build = (DWORD) (HIWORD(version));
     ua = malloc(512);
-    char *arch = getenv("PROCESSOR_ARCHITECTURE");
+    arch = getenv("PROCESSOR_ARCHITECTURE");
     snprintf(ua, 512, "%sWindows NT %u.%u; %s", userAgent, major, minor, arch);
     client_ua = ua;
 #else
@@ -394,12 +401,19 @@ size_t size, *osize;
 bool debug;
 {
     int r, s, len;
+#ifdef _MSC_VER
+	char buf[1024], port[8], *rq;
+#else
     char buf[1024], port[8], rq[size + 8192];
+#endif
     char *rq_type = 0, *rq_headers = 0;
     url_parser_url_t *parsed_uri;
     struct HttpResponse rsp;
     struct http_roundtripper rt;
 
+#ifdef _MSC_VER
+	rq = alloca(size + 8192);
+#endif
     http_init(&rt, callbacks, &rsp);
     rsp.size = 0;
     rsp.body = malloc(0); /* Need a valid pointer, but we can embiggen as we go */

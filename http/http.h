@@ -30,7 +30,13 @@
 #if defined(__cplusplus)
 extern "C" {
 #endif
+#if __STDC_VERSION__ >= 199901L
 #include <stdbool.h>
+#else
+#define bool int
+#define true 1
+#define false 0
+#endif
 #include <stddef.h>
 
     typedef enum {

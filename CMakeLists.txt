@@ -34,8 +34,16 @@ IF(CMAKE_SYSTEM_NAME MATCHES "Windows")
 ENDIF(CMAKE_SYSTEM_NAME MATCHES "Windows")
 
 IF(BUILD_TESTING)
+	IF (MSVC)
+		MESSAGE(FATAL_ERROR "Testing not available with MSVC, unit tests make extensive use of C99")
+	ENDIF()
 	enable_testing()
 ENDIF(BUILD_TESTING)
+
+if(MSVC)
+include_directories(include)
+add_definitions(-D_CRT_SECURE_NO_DEPRECATE -Dsnprintf=_snprintf)
+endif()
 
 IF(CMAKE_COMPILER_IS_GNUCC OR CMAKE_C_COMPILER_ID MATCHES "Clang")
 	SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fmessage-length=0 -Wall -Wmissing-field-initializers -Wno-missing-braces -Wparentheses")

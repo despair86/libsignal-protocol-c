@@ -20,9 +20,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <stdbool.h>
 #ifdef __sun
 #include <alloca.h>
+#endif
+#ifdef _MSC_VER
+#include <malloc.h>
 #endif
 #include "http.h"
 
@@ -34,10 +36,12 @@ char** argv;
     bool b;
     size_t size;
     int r;
+	unsigned char* out;
 
     printf("Web Client Unit Test\n");
     b = http_client_init();
-    unsigned char* out = alloca(8192);
+    out = alloca(8192);
+	memset(out, 0, 8192);
     if (!b)
     {
         printf("Failed to start web client\n");
@@ -47,14 +51,22 @@ char** argv;
     r = http_request(test_uri, NULL, NULL, GET, HTTP_NONE, 0, out, &size, true);
     if (r == 200)
     {
-        printf("Status: %d\nSize: %zu\nResponse:\n--->%s<---\n", r, size, out);
+#ifdef _MSC_VER
+        printf("Status: %d\nSize: %d\nResponse:\n--->%s<---\n", r, size, out);
+#else
+		printf("Status: %d\nSize: %zu\nResponse:\n--->%s<---\n", r, size, out);
+#endif
         printf("Simple HTTP GET unit test passed.\n");
         http_client_cleanup();
         return 0;
     }
     else
     {
-        printf("Status: %d\nSize: %zu\nResponse:\n--->%s<---\n", r, size, out);
+#ifdef _MSC_VER
+        printf("Status: %d\nSize: %d\nResponse:\n--->%s<---\n", r, size, out);
+#else
+		printf("Status: %d\nSize: %zu\nResponse:\n--->%s<---\n", r, size, out);
+#endif
         http_client_cleanup();
         printf("Unit test failed!\n");
         return -1;

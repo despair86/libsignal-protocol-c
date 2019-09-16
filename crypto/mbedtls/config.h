@@ -1767,7 +1767,9 @@
  *
  * This modules adds support for the AES-NI instructions on x86-64
  */
+#ifndef _MSC_VER
 #define MBEDTLS_AESNI_C
+#endif
 
 /**
  * \def MBEDTLS_AES_C
@@ -2840,7 +2842,9 @@
  *
  * Enable this layer to allow use of mutexes within mbed TLS
  */
+#ifndef _MSC_VER
 #define MBEDTLS_THREADING_C
+#endif
 
 /**
  * \def MBEDTLS_TIMING_C

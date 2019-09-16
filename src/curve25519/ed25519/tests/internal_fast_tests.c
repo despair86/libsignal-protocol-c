@@ -204,6 +204,7 @@ int ge_fast_test(int silent)
 
 int elligator_fast_test(int silent)
 {
+  fe one, negone, zero;
   unsigned char elligator_correct_output[32] = 
   {
   0x5f, 0x35, 0x20, 0x00, 0x1c, 0x6c, 0x99, 0x36, 
@@ -230,7 +231,10 @@ int elligator_fast_test(int silent)
 
   int count;
   fe in, out;
+  ge_p3 p3;
   unsigned char bytes[32];
+  /* Hash to point vector test */
+  unsigned char htp[32];
   fe_0(in);
   fe_0(out);
   for (count = 0; count < 32; count++) {
@@ -247,11 +251,9 @@ int elligator_fast_test(int silent)
   TEST("Elligator(0) == 0", memcmp(in, out, 32) == 0);
 
   /* ge_montx_to_p3(0) -> order2 point test */
-  fe one, negone, zero;
   fe_1(one);
   fe_0(zero);
   fe_sub(negone, zero, one);
-  ge_p3 p3;
   ge_montx_to_p3(&p3, zero, 0);
   TEST("ge_montx_to_p3(0) == order 2 point", 
       fe_isequal(p3.X, zero) &&
@@ -259,9 +261,6 @@ int elligator_fast_test(int silent)
       fe_isequal(p3.Z, one) && 
       fe_isequal(p3.T, zero));
 
-  /* Hash to point vector test */
-  unsigned char htp[32];
-  
   for (count=0; count < 32; count++) {
     htp[count] = count;
   }
@@ -293,7 +292,11 @@ int curvesigs_fast_test(int silent)
     0x0b, 0xd6, 0xc1, 0x97, 0x3f, 0x7d, 0x78, 0x0a, 
     0xb3, 0x95, 0x18, 0x62, 0x68, 0x03, 0xd7, 0x82,
   };
+#if __STDC_VERSION__ >= 199901L
   const int MSG_LEN  = 200;
+#else
+#define MSG_LEN 200
+#endif
   unsigned char privkey[32];
   unsigned char pubkey[32];
   unsigned char signature[64];
@@ -333,7 +336,11 @@ int xeddsa_fast_test(int silent)
   0x69, 0xad, 0xa5, 0x76, 0xd6, 0x3d, 0xca, 0xf2, 
   0xac, 0x32, 0x6c, 0x11, 0xd0, 0xb9, 0x77, 0x02,
   };
+#if __STDC_VERSION__ >= 199901L
   const int MSG_LEN  = 200;
+#else
+#define MSG_LEN 200
+#endif
   unsigned char privkey[32];
   unsigned char pubkey[32];
   unsigned char signature[64];
@@ -409,6 +416,8 @@ int generalized_xveddsa_fast_test(int silent)
   unsigned char msg2[1000];
   unsigned char random[64];
   unsigned char vrf[32];
+  unsigned char signature3[96];
+  unsigned char vrf3[96];
 
   memset(signature1, 0, 64);
   memset(signature2, 0, 64);
@@ -431,8 +440,6 @@ int generalized_xveddsa_fast_test(int silent)
   TEST("generalized xveddsa verify #4", generalized_xveddsa_25519_verify(vrf, signature2, pubkey, msg1, 100, (unsigned char*)"abc", 3) != 0);
 
 
-  unsigned char signature3[96];
-  unsigned char vrf3[96];
   random[0] ^= 1;
   TEST("generalized xveddsa sign #3", generalized_xveddsa_25519_sign(signature3, privkey, msg1, 100, random, NULL, 0) == 0);
   TEST("generalized xveddsa verify #5", generalized_xveddsa_25519_verify(vrf, signature1, pubkey, msg1, 100, NULL, 0) == 0);
