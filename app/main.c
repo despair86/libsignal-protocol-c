@@ -56,6 +56,9 @@ char** argv;
     int x,y,i;
 
     initscr();
+#ifdef _WIN32
+    resize_term(132,24);
+#endif
     start_color();
     init_pair(1, COLOR_GREEN, COLOR_BLACK);
     init_pair(2, COLOR_WHITE, COLOR_BLACK);

@@ -21,16 +21,16 @@ ounce of prevention, as they say!](https://www.goodreads.com/quotes/247269-an-ou
 
 ## Developer Setup
 
-First, you'll need a C89 compiler. We make use of some C99 features, but should be optional soon enough. 
+First, you'll need a C89 compiler. App and library code is straight C89, while unit tests make extensive use of C99+
 We've tested the following C compilation systems:
 
-- Microsoft C v15.00.30729+
+- Microsoft C v15.00.30729+ NOTE: Unit tests are unavailble when using MSVC.
 - GNU CC v8.3+
 - Apple LLVM C v8.0.1
 - Oracle ProWorks (the x86 compiler) 12.1 or later
 - Oracle SPARCWorks 12.1+
 
-While these are the compilers currently used, pretty much any conforming C89/99 implementation should work,
+While these are the compilers currently tested, pretty much any conforming C89/99 implementation should work,
 as we make no use of any vendor specific extensions, only platform-specific extensions when warranted.
 
 Then you need `git`, if you don't have that yet: https://git-scm.com/
@@ -51,8 +51,9 @@ We can use the old NextSTEP implementation of BSD curses, as long as it has some
 3.  Install cURL from https://curl.haxx.se, we use it only to download the Netscape Navigator root cert bundle, manually grab from: https://curl.haxx.se/ca/cacert.pem and save as `rootcerts.pem`
 4.  Compile and load either of PDCurses or `ncurses`. 
     - For PDCurses, you may have to copy/symlink `$LIB/wincon/libpdcursesstatic.a` to `$LIB/libcurses.a`. Ncurses automatically installs its headers and libraries in the expected locations.
+    - The PDCurses headers are provided as a convenience, and should be API compatible if linking against ncurses.
 
-If you are developing on an older version of Windows, you should probably get the last version of Microsoft C available for your system, plus the Windows Server 2003 R2 SDK.
+If you are developing on an older version of Windows, you should probably get the last version of Microsoft C available for your system, plus the Windows SDK for Windows Server 2003 R2.
 
 ### Linux
 
@@ -163,6 +164,8 @@ smoothly.
 
 Please write tests! Our testing framework is
 [Check](https://libcheck.github.io/check).
+
+A C99 compilation system is required to assemble unit tests.
 
 The easiest way to run all tests at once is `make test`. Additionally, you can handwrite unit tests, by
 making them return 0 for success, and anything else if it failed.
