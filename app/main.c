@@ -82,7 +82,7 @@ char** argv;
         refresh();
     }
 #ifdef _WIN32
-    printw("Press any key to exit\n");
+    printw("\nPress any key to exit\n");
     refresh();
     getch();
 #endif
