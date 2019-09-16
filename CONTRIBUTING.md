@@ -24,7 +24,7 @@ ounce of prevention, as they say!](https://www.goodreads.com/quotes/247269-an-ou
 First, you'll need a C89 compiler. App and library code is straight C89, while unit tests make extensive use of C99+.
 We've tested the following C compilation systems:
 
-- Microsoft C v15.00.30729+ **NOTE: Unit tests are unavailble when using MSVC.**
+- Microsoft C v15.00.30729+ **NOTE: Unit tests are unavailable when using MSVC.**
 - GNU CC v8.3+
 - Apple LLVM C v8.0.1
 - Oracle ProWorks (the x86 compiler) 12.1 or later
@@ -86,7 +86,7 @@ GCC or Clang packages for Solaris 2.5-2.10 available.
 
 A separate X/Open Group curses implementation is not required, we can use the regular System 5 Release 4 `libcurses`.
 
-**NOTE: the system libcurses may print inconsistent colours if the terminal backgrouns *isn't* black.** This limitation stems from
+**NOTE: the system libcurses may print inconsistent colours if the terminal background *isn't* black.** This limitation stems from
 the assumption that all terminals have a black background.
 
 ## Development host setup (All platforms)
