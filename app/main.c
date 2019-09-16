@@ -45,9 +45,9 @@ char loki_logo[] = {
     "      .oXMMK;   ,0MMMNd.    ,KMx.        .dNNx'      .dNWx.  cNMo  .dNNd.    dMW\n"
     "        .lo'  'dXMMNk;.     ,KMXxdddddl.   :ONNkollokXN0c.   cNMo    ;OWKl.  dMW\n"
     "            'dXMMNk;        .lddddddddo.     ,ldxkkkdl,.     'od,     .cdo;  ;dd\n"
-    "          'dXMMNk;\n"
+    "          'dXMMNk;          \n"
     "         .oNMNk;             " __LABEL__ "\n"
-    "          .l0l."
+    "          .l0l.             \n"
 };
 
 main(argc, argv)
@@ -56,16 +56,20 @@ char** argv;
     int x,y,i;
 
     initscr();
+    cbreak();
+    noecho();
+    nonl();
+    intrflush(stdscr, FALSE);
+    keypad(stdscr, TRUE);
     start_color();
     init_pair(1, COLOR_GREEN, COLOR_BLACK);
-    init_pair(2, COLOR_WHITE, COLOR_BLACK);
     for(i = 0; i < sizeof(loki_logo); i++)
     {
         if (loki_logo[i] == 0)
             break;
         getyx(stdscr, y, x);
         if (x > 25)
-            addch(loki_logo[i]|COLOR_PAIR(2));
+            addch(loki_logo[i]);
         else
             addch(loki_logo[i]|COLOR_PAIR(1));
     }

@@ -21,14 +21,15 @@ ounce of prevention, as they say!](https://www.goodreads.com/quotes/247269-an-ou
 
 ## Developer Setup
 
-First, you'll need a C89 compiler. App and library code is straight C89, while unit tests make extensive use of C99+
+First, you'll need a C89 compiler. App and library code is straight C89, while unit tests make extensive use of C99+.
 We've tested the following C compilation systems:
 
-- Microsoft C v15.00.30729+ NOTE: Unit tests are unavailble when using MSVC.
+- Microsoft C v15.00.30729+ **NOTE: Unit tests are unavailble when using MSVC.**
 - GNU CC v8.3+
 - Apple LLVM C v8.0.1
 - Oracle ProWorks (the x86 compiler) 12.1 or later
 - Oracle SPARCWorks 12.1+
+- IRIS Development Option v7.2 (or any version of Pro64 for any supported CPU and its descendants)
 
 While these are the compilers currently tested, pretty much any conforming C89/99 implementation should work,
 as we make no use of any vendor specific extensions, only platform-specific extensions when warranted.
@@ -47,13 +48,17 @@ We can use the old NextSTEP implementation of BSD curses, as long as it has some
     * Install Microsoft .NET Framework 3.5:
       (See Programs and Features/Optional Features)
     * Install Windows SDK version 7.0: https://developer.microsoft.com/en-us/windows/downloads/sdk-archive
-2.  Install CMake from https://cmake.org/. 32-bit build is recommended even in 64-bit installs if core memory is at a premium on your site.
-3.  Install cURL from https://curl.haxx.se, we use it only to download the Netscape Navigator root cert bundle, manually grab from: https://curl.haxx.se/ca/cacert.pem and save as `rootcerts.pem`
+2.  Install CMake from https://cmake.org/. 32-bit build is recommended even in 64-bit installs 
+    if core memory is at a premium on your site.
+3.  Install cURL from https://curl.haxx.se, we use it only to download the Netscape Navigator root 
+    cert bundle, manually grab from: https://curl.haxx.se/ca/cacert.pem and save as `rootcerts.pem`
 4.  Compile and load either of PDCurses or `ncurses`. 
-    - For PDCurses, you may have to copy/symlink `$LIB/wincon/libpdcursesstatic.a` to `$LIB/libcurses.a`. Ncurses automatically installs its headers and libraries in the expected locations.
+    - For PDCurses, you may have to copy/symlink `$LIB/wincon/libpdcursesstatic.a` to 
+      `$LIB/libcurses.a`. Ncurses automatically installs its headers and libraries in the expected locations.
     - The PDCurses headers are provided as a convenience, and should be API compatible if linking against ncurses.
 
-If you are developing on an older version of Windows, you should probably get the last version of Microsoft C available for your system, plus the Windows SDK for Windows Server 2003 R2.
+If you are developing on an older version of Windows, you should probably get the last version
+of Microsoft C available for your system, plus the Windows SDK for Windows Server 2003 R2.
 
 ### Linux
 
@@ -68,16 +73,21 @@ If you are developing on an older version of Windows, you should probably get th
 
 ### UCB UNIX (OpenBSD, NetBSD, FreeBSD, etc)
 
-The C compilation system should already be available (try executing `cc`), optionally install Ninja, and make sure CMake and cURL are available.
+The C compilation system should already be available (try executing `cc`), optionally 
+install Ninja, and make sure CMake and cURL are available.
 
 We can use ancient BSD curses if that's all you have, so long as it implements something resembling X/Open curses.
 
 ### Solaris 2.x
 
-Install Oracle Workshop from https://www.oracle.com/technetwork/server-storage/developerstudio/overview/index.html, or
-install CMake and GCC or Clang from IPS. For SVR4 packages, the [UNC SunSITE](http://ibiblio.org) may have GCC or Clang packages for v2.5-2.10 available.
+Install Oracle Workshop from https://www.oracle.com/technetwork/server-storage/developerstudio/overview/index.html, and CMake, or
+install GCC or Clang from IPS. For SVR4 packages, the [UNC SunSITE](http://ibiblio.org) may have 
+GCC or Clang packages for Solaris 2.5-2.10 available.
 
 A separate X/Open Group curses implementation is not required, we can use the regular System 5 Release 4 `libcurses`.
+
+**NOTE: the system libcurses may print inconsistent colours if the terminal backgrouns *isn't* black.** This limitation stems from
+the assumption that all terminals have a black background.
 
 ## Development host setup (All platforms)
 
@@ -219,7 +229,8 @@ see how they did things.
 
 ## Testing Production Builds
 
-To test changes to the build system, build a release using `make` or `ninja`, which should kick off CMake if the build system changed.
+To test changes to the build system, build a release using `make` or `ninja`,
+ which should kick off CMake if the build system changed.
 
 Then, run the tests using the `test` target depending on your make app (`[make|ninja] test`)
 
