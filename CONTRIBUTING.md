@@ -39,6 +39,8 @@ Then you need `git`, if you don't have that yet: https://git-scm.com/
 
 1.  Install the [Xcode Command-Line Tools](http://osxdaily.com/2014/02/12/install-command-line-tools-mac-os-x/).
 
+We can use the old NextSTEP implementation of BSD curses, as long as it has something resembling a standard-conforming API.
+
 ### Windows
 
 1.  **Windows 7 only:**
@@ -47,6 +49,8 @@ Then you need `git`, if you don't have that yet: https://git-scm.com/
     * Install Windows SDK version 7.0: https://developer.microsoft.com/en-us/windows/downloads/sdk-archive
 2.  Install CMake from https://cmake.org/. 32-bit build is recommended even in 64-bit installs if core memory is at a premium on your site.
 3.  Install cURL from https://curl.haxx.se, we use it only to download the Netscape Navigator root cert bundle, manually grab from: https://curl.haxx.se/ca/cacert.pem and save as `rootcerts.pem`
+4.  Compile and load either of PDCurses or `ncurses`. 
+    - For PDCurses, you may have to copy/symlink `$LIB/wincon/libpdcursesstatic.a` to `$LIB/libcurses.a`. Ncurses automatically installs its headers and libraries in the expected locations.
 
 If you are developing on an older version of Windows, you should probably get the last version of Microsoft C available for your system, plus the Windows Server 2003 R2 SDK.
 
@@ -59,14 +63,20 @@ If you are developing on an older version of Windows, you should probably get th
 1.  Install `cmake`
 1.  Install `curl`
 
+`ncurses` is required on Linux.
+
 ### UCB UNIX (OpenBSD, NetBSD, FreeBSD, etc)
 
 The C compilation system should already be available (try executing `cc`), optionally install Ninja, and make sure CMake and cURRL are available.
+
+We can use ancient BSD curses if that's all you have, so long as it implements something resembling X/Open curses.
 
 ### Solaris 2.x
 
 Install Oracle Workshop from https://www.oracle.com/technetwork/server-storage/developerstudio/overview/index.html, or
 install CMake and GCC or Clang from IPS. For SVR4 packages, the [UNC SunSITE](http://ibiblio.org) may have GCC or Clang packages for v2.5-2.10 available.
+
+A separate X/Open Group curses implementation is not required, we can use the regular System 5 Release 4 `libcurses`.
 
 ## Development host setup (All platforms)
 
