@@ -28,7 +28,7 @@
 #ifdef _MSC_VER
 #include <malloc.h>
 char *
-strtok_r(char * __restrict s, const char * __restrict delim, char ** __restrict last);
+strtok_r(char * __restrict s, const char * __restrict delim, char * * __restrict last);
 #endif
 #else
 #include <sys/utsname.h>
@@ -79,13 +79,13 @@ bool http_client_init()
 {
 #ifdef _WIN32
     DWORD version, major, minor, build;
-	char* arch;
+    char* arch;
 #endif
     int r;
     char str[512];
     char* ua;
     size_t s;
-	FILE* certs;
+    FILE* certs;
 
     mbedtls_net_init(&server_fd);
     mbedtls_ssl_init(&ssl);
@@ -405,7 +405,7 @@ bool debug;
 {
     int r, s, len;
 #ifdef _MSC_VER
-	char buf[1024], port[8], *rq;
+    char buf[1024], port[8], *rq;
 #else
     char buf[1024], port[8], rq[size + 8192];
 #endif
@@ -415,7 +415,7 @@ bool debug;
     struct http_roundtripper rt;
 
 #ifdef _MSC_VER
-	rq = alloca(size + 8192);
+    rq = alloca(size + 8192);
 #endif
     http_init(&rt, callbacks, &rsp);
     rsp.size = 0;

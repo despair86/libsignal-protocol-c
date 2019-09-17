@@ -31,11 +31,11 @@ struct test
 main(argc, argv)
 char **argv;
 {
-	struct test t;
-	char* pretty_json;
-	cJSON* obj;
-    
-	puts("JSON parser unit test");
+    struct test t;
+    char* pretty_json;
+    cJSON* obj;
+
+    puts("JSON parser unit test");
     printf("JSON test vector: %s\n", test_json);
     obj = cJSON_Parse(test_json);
     if (!obj)

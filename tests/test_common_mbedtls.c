@@ -79,7 +79,7 @@ int test_hmac_sha256_final(void *hmac_context, signal_buffer **output, void *use
     int result = 0;
     unsigned char md[MBEDTLS_MD_MAX_SIZE];
     unsigned int len;
-	signal_buffer *output_buffer;
+    signal_buffer *output_buffer;
     mbedtls_md_context_t *ctx = hmac_context;
     len = ctx->md_info->size;
 
@@ -191,7 +191,7 @@ int test_sha512_digest_final(void *digest_context, signal_buffer **output, void 
     int result = 0;
     unsigned char md[MBEDTLS_MD_MAX_SIZE];
     unsigned int len = MBEDTLS_MD_MAX_SIZE;
-	signal_buffer *output_buffer;
+    signal_buffer *output_buffer;
     mbedtls_md_context_t *ctx = digest_context;
 
     result = mbedtls_md_finish(ctx, md);
@@ -246,7 +246,7 @@ int test_encrypt(signal_buffer **output,
     int result = 0;
     mbedtls_cipher_context_t *ctx = 0;
     uint8_t *out_buf = 0;
-	size_t out_len, final_len;
+    size_t out_len, final_len;
 
     const mbedtls_cipher_info_t *evp_cipher = aes_cipher_select(cipher, key_len);
     if (!evp_cipher)
@@ -347,7 +347,7 @@ int test_decrypt(signal_buffer **output,
     int result = 0;
     mbedtls_cipher_context_t *ctx = 0;
     uint8_t *out_buf = 0;
-	size_t out_len, final_len;
+    size_t out_len, final_len;
 
     const mbedtls_cipher_info_t *evp_cipher = aes_cipher_select(cipher, key_len);
     if (!evp_cipher)

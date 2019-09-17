@@ -36,12 +36,12 @@ char** argv;
     bool b;
     size_t size;
     int r;
-	unsigned char* out;
+    unsigned char* out;
 
     printf("Web Client Unit Test\n");
     b = http_client_init();
     out = alloca(8192);
-	memset(out, 0, 8192);
+    memset(out, 0, 8192);
     if (!b)
     {
         printf("Failed to start web client\n");
@@ -54,7 +54,7 @@ char** argv;
 #ifdef _MSC_VER
         printf("Status: %d\nSize: %d\nResponse:\n--->%s<---\n", r, size, out);
 #else
-		printf("Status: %d\nSize: %zu\nResponse:\n--->%s<---\n", r, size, out);
+        printf("Status: %d\nSize: %zu\nResponse:\n--->%s<---\n", r, size, out);
 #endif
         printf("Simple HTTP GET unit test passed.\n");
         http_client_cleanup();
@@ -65,7 +65,7 @@ char** argv;
 #ifdef _MSC_VER
         printf("Status: %d\nSize: %d\nResponse:\n--->%s<---\n", r, size, out);
 #else
-		printf("Status: %d\nSize: %zu\nResponse:\n--->%s<---\n", r, size, out);
+        printf("Status: %d\nSize: %zu\nResponse:\n--->%s<---\n", r, size, out);
 #endif
         http_client_cleanup();
         printf("Unit test failed!\n");
