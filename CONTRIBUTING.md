@@ -42,7 +42,7 @@ Then you need `git`, if you don't have that yet: https://git-scm.com/
 
 We can use the old NextSTEP implementation of BSD curses, as long as it has something resembling a standard-conforming API.
 
-### Windows
+### Windows (using Microsoft C)
 
 1.  **Windows 7 only:**
     * Install Microsoft .NET Framework 3.5:
@@ -53,9 +53,25 @@ We can use the old NextSTEP implementation of BSD curses, as long as it has some
 3.  Install cURL from https://curl.haxx.se, we use it only to download the Netscape Navigator root 
     cert bundle, manually grab from: https://curl.haxx.se/ca/cacert.pem and save as `rootcerts.pem`
 4.  Compile and load either of PDCurses or `ncurses`. 
+    - For PDCurses, you may have to copy/symlink `$LIB/wincon/pdcurses.lib` to 
+      `$LIB/curses.lib`. Ncurses automatically installs its headers and libraries in the expected locations.
+    - The PDCurses headers are provided as a convenience, and should be API compatible if linking against ncurses.
+
+### Windows (using msys2 or mingw-w64)
+
+1.  **Windows 7 only:**
+    * Install Microsoft .NET Framework 3.5:
+      (See Programs and Features/Optional Features)
+2.  Install CMake from https://cmake.org/. 32-bit build is recommended even in 64-bit installs 
+    if core memory is at a premium on your site.
+3.  Install cURL from https://curl.haxx.se, we use it only to download the Netscape Navigator root 
+    cert bundle, manually grab from: https://curl.haxx.se/ca/cacert.pem and save as `rootcerts.pem`
+4.  Compile and load either of PDCurses or `ncurses`. 
     - For PDCurses, you may have to copy/symlink `$LIB/wincon/libpdcursesstatic.a` to 
       `$LIB/libcurses.a`. Ncurses automatically installs its headers and libraries in the expected locations.
     - The PDCurses headers are provided as a convenience, and should be API compatible if linking against ncurses.
+5.  Alternatively, you can use MSYS2 `pacman` to install these from the MSYS2 AUR
+    (along with the base `mingw-w64-$ARCH-[gcc|clang]` package)
 
 If you are developing on an older version of Windows, you should probably get the last version
 of Microsoft C available for your system, plus the Windows SDK for Windows Server 2003 R2.
@@ -208,7 +224,8 @@ So you wanna make a pull request? Please observe the following guidelines.
   Please do not submit a PR with commented out code or unfinished features.
 * Avoid meaningless or too-granular commits. If your branch contains commits like
   the lines of "Oops, reverted this change" or "Just experimenting, will
-  delete this later", please [squash or rebase those changes away](https://robots.thoughtbot.com/git-interactive-rebase-squash-amend-rewriting-history).
+  delete this later", please 
+  [squash or rebase those changes away](https://robots.thoughtbot.com/git-interactive-rebase-squash-amend-rewriting-history).
 * Don't have too few commits. If you have a complicated or long lived feature
   branch, it may make sense to break the changes up into logical atomic chunks
   to aid in the review process.

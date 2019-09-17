@@ -23,23 +23,26 @@
 #include <assert.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <inttypes.h>
+#include <loki.h>
+#include <mbedtls/sha512.h>
+
+#define NONCE_SIZE 8
 
 /* User must free() returned buffer when finished */
-unsigned char* bufferToBase64(unsigned char* buf, size_t size)
+static unsigned char* bufferToBase64(void* buf, size_t size)
 {
-    unsigned char* tmp = malloc(size);
-    assert(tmp);
+    unsigned char* tmp;
     size_t out_size;
     int r;
 
     /* Get the size of the output */
-    mbedtls_base64_encode(tmp, 0, &out_size, buf, size);
+    tmp = NULL;
+    mbedtls_base64_encode(tmp, 0, &out_size, (unsigned char*) buf, size);
 
-    if (out_size >= size)
-        realloc(tmp, out_size + 1);
-
+    tmp = malloc(out_size);
     assert(tmp);
-    r = mbedtls_base64_encode(tmp, out_size, &out_size, buf, size);
+    r = mbedtls_base64_encode(tmp, out_size, &out_size, (unsigned char*) buf, size);
     if (r)
     {
         fprintf(stderr, "Failed to encode binary data\n");
@@ -51,3 +54,53 @@ unsigned char* bufferToBase64(unsigned char* buf, size_t size)
     return tmp;
 }
 
+static uint64_t getDiffTgt(int32_t ttl, size_t payload_size)
+{
+    uint64_t x1, x2, x3, x4, x5;
+    size_t sz;
+    int32_t ttlInSecs;
+
+    x1 = (1 << 16) - 1;
+    x2 = (1 << 64) - 1;
+    sz = payload_size + NONCE_SIZE;
+    ttlInSecs = ttl / 1000;
+    x3 = (ttlInSecs * sz) / x1;
+    x4 = sz + x3;
+    /* TODO: implement Loki API routes */
+    x5 = /* get network diff */ * x4;
+    return x2 / x5;
+}
+
+unsigned char* calcPoW(int64_t timestamp, int32_t ttl, const unsigned char *pubKey, const unsigned char *data, size_t data_size)
+{
+#ifndef _MSC_VER
+    unsigned char payload[data_size + 16384];
+#else
+    unsigned char *payload;
+#endif
+    uint64_t diffTgt, ctr;
+    int64_t nonce;
+    unsigned char initial_hash[64], hash[64], tmp[NONCE_SIZE + 64];
+
+#ifdef _MSC_VER
+    payload = alloca(data_size + 16384);
+#endif
+    /* scrub everything before we start, some platforms flip out on uninitialised buffers */
+    mbedtls_platform_zeroize(payload, data_size + 16384);
+    snprintf(payload, data_size + 16384, "%" PRIi64 "%d%s%s", timestamp, ttl, pubKey, data);
+    diffTgt = getDiffTgt(ttl, strlen(payload));
+    ctr = UINT64_MAX;
+    nonce = 0;
+    mbedtls_sha512_ret(payload, strlen(payload), initial_hash, 0);
+    do
+    {
+        nonce += 1;
+        memcpy(tmp, nonce, NONCE_SIZE);
+        memcpy(tmp + NONCE_SIZE, initial_hash, 64);
+        mbedtls_sha512_ret(tmp, NONCE_SIZE + 64, hash, 0);
+        memcpy(ctr, hash, NONCE_SIZE);
+    }
+    while (ctr > diffTgt);
+    mbedtls_platform_zeroize(payload, data_size + 16384);
+    return bufferToBase64(nonce, NONCE_SIZE);
+}
