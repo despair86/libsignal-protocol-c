@@ -501,17 +501,16 @@ bool debug;
 
     initTLS();
 
-    /* get host name, set port if blank */
-    if (!strcmp("https", parsed_uri->protocol) && !parsed_uri->port)
-    {
-        parsed_uri->port = 443;
+    /* get URI protocol scheme, set port if blank */
+    if (!strcmp("https", parsed_uri->protocol))
         useTLS = true;
-    }
     else
-    {
-        parsed_uri->port = 80;
         useTLS = false;
-    }
+    
+    if(!parsed_uri->port && useTLS)
+        parsed_uri->port = 443;
+    else if(!parsed_uri->port && !useTLS)
+        parsed_uri->port = 80;
 
     /*printf("connecting to %s on port %d...", parsed_uri->host, parsed_uri->port);*/
 
