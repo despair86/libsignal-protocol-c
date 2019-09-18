@@ -293,7 +293,7 @@ size_t an, bn, s;
     memcpy(p + an*s, b, bn * s);
     return p;
 }
-*/
+ */
 
 /* Insecure mode */
 static bool open_http_sock(host, port)
@@ -389,13 +389,13 @@ void* opaque;
 const char* data;
 {
     struct HttpResponse* response = (struct HttpResponse*) opaque;
-    
+
     /* If we got nothing in the response array, allocate a buffer
      * large enough to fit the first chunk of data
      */
     if (!response->body)
     {
-        response->body = malloc(size+1);
+        response->body = malloc(size + 1);
         assert(response->body);
     }
     /* This covers the case where we pre-allocate a large response buffer:
@@ -405,7 +405,7 @@ const char* data;
      */
     if (((response->size + size) > response->size) && response->size)
     {
-        response->body = realloc(response->body, (response->size + size +1));
+        response->body = realloc(response->body, (response->size + size + 1));
         assert(response->body);
     }
     /* If we already have pre-existing data, move up and scrub the newly allocated
@@ -413,7 +413,7 @@ const char* data;
      */
     if (response->body && response->size)
     {
-        memset(response->body+response->size, '\0', size);
+        memset(response->body + response->size, '\0', size);
         memmove(response->body + response->size, data, size);
     }
     else
@@ -517,8 +517,8 @@ bool debug;
 
     snprintf(port, 8, "%d", parsed_uri->port);
 
-	if (useTLS)
-	{
+    if (useTLS)
+    {
         if (!open_tls_sock(parsed_uri->host, port))
         {
             fprintf(stderr, "Failed to connect to %s\n", parsed_uri->host);
@@ -584,7 +584,7 @@ bool debug;
                 goto exit;
             }
         }
-        
+
         len = 0;
         s = 0;
         do
@@ -625,39 +625,51 @@ bool debug;
         while (r && s);
     }
 
-	/* If out is NULL, don't write anything. Perhaps they only wanted the HTTP status code? */
+    /* If out is NULL, don't write anything. Perhaps they only wanted the HTTP status code? */
     if (out)
-	{
+    {
         /* If osize is null, what the fuck do you want? At this point all we can return is the status code */
         if (!osize)
-			goto exit;
+            goto exit;
 
-		/* If osize is valid but 0, you can still get the response size in addition to the status code */
-		if (osize && !*osize)
-		{
-			*osize = rsp.size;
-			goto exit;
-		}
+        /* If osize is valid but 0, you can still get the response size in addition to the status code */
+        if (osize && !*osize)
+        {
+            *osize = rsp.size;
+            goto exit;
+        }
 
-		if (rsp.size > *osize)
-		{
+        if (rsp.size > *osize)
+        {
 #ifndef NDEBUG
 #ifdef _MSC_VER
-			fprintf(stderr, "WARNING: Output truncated! Want %d bytes, wrote %d bytes\n", rsp.size, (*osize)-1);
+            fprintf(stderr, "WARNING: Output truncated! Want %d bytes, wrote %d bytes\n", rsp.size, (*osize) - 1);
 #else
-			fprintf(stderr, "WARNING: Output truncated! Want %zu bytes, wrote %zu bytes\n", rsp.size, (*osize)-1);
+            fprintf(stderr, "WARNING: Output truncated! Want %zu bytes, wrote %zu bytes\n", rsp.size, (*osize) - 1);
 #endif
 #endif
-			memmove(out, rsp.body, *osize);
-			out[(*osize)-1] = 0;
-		}
-		else
-		{
-			memmove(out, rsp.body, rsp.size);
-		}
+            memmove(out, rsp.body, *osize);
+            out[(*osize) - 1] = 0;
+        }
+        else
+        {
+            memmove(out, rsp.body, rsp.size);
+        }
         /* let the user know data may have been truncated by returning the original response size */
         *osize = rsp.size;
-	}
+    }
+    else
+    {
+        if (!osize)
+            goto exit;
+
+        /* if out is null but osize is a valid address, give them the request length too */
+        if (osize && !*osize)
+        {
+            *osize = rsp.size;
+            goto exit;
+        }        
+    }
 
 exit:
     free_parsed_url(parsed_uri);
@@ -665,7 +677,7 @@ exit:
     http_free(&rt);
     if (post_type == HTTP_ENCODED || post_type == HTTP_JSON_DATA)
         free(rq_headers);
-    
+
     /* Don't leave connections open */
     mbedtls_net_free(&server_fd);
     /* Don't leak core, we already copied this to the user provided array
