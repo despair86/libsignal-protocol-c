@@ -51,6 +51,15 @@ extern "C" {
         HTTP_JSON_DATA
     } http_content_type;
 
+    /* The basic HTTP response object. */
+    struct HttpResponse {
+        char* body;
+        int code;
+        size_t size;
+        /* TODO: container for header k-v pairs. */
+        /* Right now we just print them to the screen */
+    };
+
     char* client_ua;
 
     /**

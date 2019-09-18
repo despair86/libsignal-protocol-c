@@ -85,6 +85,7 @@ typedef struct url_parser_url
 static const char* seed = "Loki Pager HTTPS client";
 
 /* If this fails, do NOT use the HTTP client */
+
 /* Must call http_client_cleanup() before attempting to recover
  * from a failed web client boot */
 bool http_client_init()
@@ -370,14 +371,6 @@ char* host, *port;
     return true;
 }
 
-/* Response data/funcs */
-struct HttpResponse
-{
-    char* body;
-    int code;
-    size_t size;
-};
-
 static void* response_realloc(opaque, ptr, size)
 void* opaque, *ptr;
 {
@@ -433,9 +426,18 @@ static void response_header(opaque, ckey, nkey, cvalue, nvalue)
 void* opaque;
 const char* ckey, *cvalue;
 {
-#if 0
-    printf("%s, %d, %s, %d\n", ckey, nkey, cvalue, nvalue);
-#endif
+    char *key, *value;
+
+    /* print the key */
+    key = alloca(nkey + 1);
+    memset(key, 0, nkey + 1);
+    memmove(key, ckey, nkey);
+
+    /* print value */
+    value = alloca(nvalue + 1);
+    memset(value, 0, nvalue + 1);
+    memmove(value, cvalue, nvalue);
+    printf("%s: %s\n", key, value);
 }
 
 static void response_code(opaque, code)
@@ -458,6 +460,7 @@ static const struct http_funcs callbacks = {
 /* RETURN: HTTP status code in [ER]AX (Or whatever the machine ABI designates return values in.) 
  * Writes at most size-1 bytes to user provided buffer. User can check the resulting value of osize,
  * and reallocate+reissue the request to get all the data. */
+
 /* If out and osize are NULL, all you will be able to get is the HTTP status code. 
  * If out is invalid, but osize _isn't_, we can give you the size of the resulting buffer with which
  * to reissue the request with.
@@ -512,10 +515,10 @@ bool debug;
         useTLS = true;
     else
         useTLS = false;
-    
-    if(!parsed_uri->port && useTLS)
+
+    if (!parsed_uri->port && useTLS)
         parsed_uri->port = 443;
-    else if(!parsed_uri->port && !useTLS)
+    else if (!parsed_uri->port && !useTLS)
         parsed_uri->port = 80;
 
     /*printf("connecting to %s on port %d...", parsed_uri->host, parsed_uri->port);*/
@@ -669,7 +672,7 @@ bool debug;
         else
         {
             *osize = rsp.size;
-            goto exit;            
+            goto exit;
         }
     }
 
