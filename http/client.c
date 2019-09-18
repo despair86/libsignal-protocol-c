@@ -652,9 +652,8 @@ bool debug;
             out[(*osize) - 1] = 0;
         }
         else
-        {
             memmove(out, rsp.body, rsp.size);
-        }
+
         /* let the user know data may have been truncated by returning the original response size */
         *osize = rsp.size;
     }
@@ -662,13 +661,11 @@ bool debug;
     {
         if (!osize)
             goto exit;
-
-        /* if out is null but osize is a valid address, give them the request length too */
-        if (osize && !*osize)
+        else
         {
             *osize = rsp.size;
-            goto exit;
-        }        
+            goto exit;            
+        }
     }
 
 exit:
