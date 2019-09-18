@@ -134,7 +134,7 @@ bool http_client_init()
         build = (DWORD) (HIWORD(version));
     ua = malloc(512);
     arch = getenv("PROCESSOR_ARCHITECTURE");
-    snprintf(ua, 512, "%sWindows NT %u.%u; %s", userAgent, major, minor, arch);
+    snprintf(ua, 512, "%sWindows NT %u.%u.%u; %s", userAgent, major, minor, build, arch);
     client_ua = ua;
 #else
     ua = malloc(512);
@@ -466,7 +466,7 @@ bool debug;
 #endif
     http_init(&rt, callbacks, &rsp);
     rsp.size = 0;
-    rsp.body = NULL; /* Need a valid pointer, but we can embiggen as we go */
+    rsp.body = NULL;
     rsp.code = 0;
 
     if (!headers)
@@ -591,6 +591,7 @@ void http_client_cleanup()
     mbedtls_ctr_drbg_free(&ctr_drbg);
     mbedtls_entropy_free(&entropy);
     mbedtls_ssl_free(&ssl);
+    mbedtls_net_free(&server_fd);
     mbedtls_ssl_config_free(&conf);
     free(ca_certs);
     free(client_ua);
