@@ -27,7 +27,7 @@ else()
   set(TEST_PATH ${CMAKE_CURRENT_BINARY_DIR})
 endif()
 
-if(WIN32)
+if(WIN32 AND NOT MSVC)
 set(CHECK_LDFLAGS ${CHECK_LIBRARIES})
 set(CMAKE_C_STANDARD_LIBRARIES "${CMAKE_C_STANDARD_LIBRARIES} -lcompat")
 endif()
@@ -49,6 +49,7 @@ set(common_SRCS ${common_SRCS}
 	test_common_mbedtls.c
 )
 
+if(NOT MSVC)
 add_executable(test_curve25519 test_curve25519.c ${common_SRCS})
 target_link_libraries(test_curve25519 ${LIBS})
 add_test(test_curve25519 ${TEST_PATH}/test_curve25519)
@@ -100,6 +101,7 @@ add_test(test_fingerprint ${TEST_PATH}/test_fingerprint)
 add_executable(test_device_consistency test_device_consistency.c ${common_SRCS})
 target_link_libraries(test_device_consistency ${LIBS})
 add_test(test_device_consistency ${TEST_PATH}/test_device_consistency)
+endif()
 
 add_executable(crypto_selftest crypto_selftest.c)
 target_link_libraries(crypto_selftest ${LIBS})

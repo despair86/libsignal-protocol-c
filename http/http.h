@@ -115,9 +115,14 @@ extern "C" {
     void http_client_cleanup();
 
     /* A oneshot HTTP client */
-    /* IN: uri, headers, data, verb, content-type, request size */
+    /* IN: uri, headers, data, verb, content-type, request size, output buffer size */
     /* OUT: response, response size */
-    /* RETURN: HTTP status code in [ER]AX (Or whatever the machine ABI designates return values in.) */
+    /* RETURN: HTTP status code in [ER]AX (Or whatever the machine ABI designates return values in.) 
+	 * Writes at most size-1 bytes to user provided buffer. User can check the resulting value of osize,
+	 * and reallocate+reissue the request to get all the data. */
+	/* If out and osize are NULL, all you will be able to get is the HTTP status code. 
+	 * If *osize is 0, you get no response data, regardless of whether out is a valid pointer or not.
+	 */
     int http_request(char *uri, char *headers, unsigned char *data, http_verb verb, http_content_type post_type, size_t size, unsigned char *out, size_t *osize, bool debug);
 
 #if defined(__cplusplus)

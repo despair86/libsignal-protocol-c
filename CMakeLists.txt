@@ -35,7 +35,7 @@ ENDIF(CMAKE_SYSTEM_NAME MATCHES "Windows")
 
 IF(BUILD_TESTING)
 	IF (MSVC)
-		MESSAGE(FATAL_ERROR "Testing not available with MSVC, unit tests make extensive use of C99")
+		MESSAGE(WARNING "Check-based testing not available with MSVC, unit tests make extensive use of C99. Enabling only a limited set of unit tests.")
 	ENDIF()
 	enable_testing()
 ENDIF(BUILD_TESTING)

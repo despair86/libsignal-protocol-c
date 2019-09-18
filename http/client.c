@@ -295,6 +295,21 @@ size_t an, bn, s;
 }
 */
 
+/* Insecure mode */
+static bool open_http_sock(host, port)
+char* host, *port;
+{
+    int r;
+
+    r = mbedtls_net_connect(&server_fd, host, port, MBEDTLS_NET_PROTO_TCP);
+    if (r)
+    {
+        printf("error - failed to connect to server: %d\n", r);
+        return false;
+    }
+    return true;
+}
+
 static bool open_tls_sock(host, port)
 char* host, *port;
 {
@@ -386,7 +401,7 @@ const char* data;
     /* This covers the case where we pre-allocate a large response buffer:
      * we can just move on if we did. Otherwise, we need to enlarge the
      * existing buffer before we start writing to it.
-     * If we just allocated a buffer we can also skip this.
+     * If we just allocated a buffer above we can also skip this.
      */
     if (((response->size + size) > response->size) && response->size)
     {
@@ -451,6 +466,7 @@ size_t size, *osize;
 bool debug;
 {
     int r, s, len;
+    bool useTLS;
 #ifdef _MSC_VER
     char buf[1024], port[8], *rq;
 #else
@@ -487,16 +503,35 @@ bool debug;
 
     /* get host name, set port if blank */
     if (!strcmp("https", parsed_uri->protocol) && !parsed_uri->port)
+    {
         parsed_uri->port = 443;
+        useTLS = true;
+    }
+    else
+    {
+        parsed_uri->port = 80;
+        useTLS = false;
+    }
 
     /*printf("connecting to %s on port %d...", parsed_uri->host, parsed_uri->port);*/
 
     snprintf(port, 8, "%d", parsed_uri->port);
 
-    if (!open_tls_sock(parsed_uri->host, port))
+	if (useTLS)
+	{
+        if (!open_tls_sock(parsed_uri->host, port))
+        {
+            fprintf(stderr, "Failed to connect to %s\n", parsed_uri->host);
+            goto exit;
+        }
+    }
+    else
     {
-        fprintf(stderr, "Failed to connect to %s\n", parsed_uri->host);
-        goto exit;
+        if (!open_http_sock(parsed_uri->host, port))
+        {
+            fprintf(stderr, "Failed to connect to %s\n", parsed_uri->host);
+            goto exit;
+        }
     }
 
     switch (type)
@@ -539,35 +574,90 @@ bool debug;
         s += size;
     }
 
-    while (r = mbedtls_ssl_write(&ssl, (unsigned char*) rq, s) <= 0)
+    if (useTLS)
     {
-        if (r != MBEDTLS_ERR_SSL_WANT_READ && r != MBEDTLS_ERR_SSL_WANT_WRITE)
+        while ((r = mbedtls_ssl_write(&ssl, (unsigned char*) rq, s)) <= 0)
         {
-            printf("failed! error %d\n\n", r);
-            goto exit;
+            if (r != MBEDTLS_ERR_SSL_WANT_READ && r != MBEDTLS_ERR_SSL_WANT_WRITE)
+            {
+                printf("failed! error %d\n\n", r);
+                goto exit;
+            }
         }
+        
+        len = 0;
+        s = 0;
+        do
+        {
+            r = mbedtls_ssl_read(&ssl, (unsigned char*) buf, 1024);
+            if (r <= 0)
+                break;
+            else
+            {
+                s = http_data(&rt, buf, r, &len);
+            }
+        }
+        while (r && s);
+        mbedtls_ssl_close_notify(&ssl);
+    }
+    else
+    {
+        while ((r = mbedtls_net_send(&server_fd, (unsigned char*) rq, s)) <= 0)
+        {
+            if (r != MBEDTLS_ERR_SSL_WANT_READ && r != MBEDTLS_ERR_SSL_WANT_WRITE)
+            {
+                printf("failed! error %d\n\n", r);
+                goto exit;
+            }
+        }
+        len = 0;
+        s = 0;
+        do
+        {
+            r = mbedtls_net_recv(&server_fd, (unsigned char*) buf, 1024);
+            if (r <= 0)
+                break;
+            else
+            {
+                s = http_data(&rt, buf, r, &len);
+            }
+        }
+        while (r && s);
     }
 
-    len = 0;
-    s = 0;
-    do
-    {
-        r = mbedtls_ssl_read(&ssl, (unsigned char*) buf, 1024);
-        if (r <= 0)
-            break;
-        else
-        {
-            s = http_data(&rt, buf, r, &len);
-        }
-    }
-    while (r && s);
-
-    mbedtls_ssl_close_notify(&ssl);
-
+	/* If out is NULL, don't write anything. Perhaps they only wanted the HTTP status code? */
     if (out)
-        memmove(out, rsp.body, rsp.size);
+	{
+        /* If osize is null, what the fuck do you want? At this point all we can return is the status code */
+        if (!osize)
+			goto exit;
 
-    *osize = rsp.size;
+		/* If osize is valid but 0, you can still get the response size in addition to the status code */
+		if (osize && !*osize)
+		{
+			*osize = rsp.size;
+			goto exit;
+		}
+
+		if (rsp.size > *osize)
+		{
+#ifndef NDEBUG
+#ifdef _MSC_VER
+			fprintf(stderr, "WARNING: Output truncated! Want %d bytes, wrote %d bytes\n", rsp.size, (*osize)-1);
+#else
+			fprintf(stderr, "WARNING: Output truncated! Want %zu bytes, wrote %zu bytes\n", rsp.size, (*osize)-1);
+#endif
+#endif
+			memmove(out, rsp.body, *osize);
+			out[(*osize)-1] = 0;
+		}
+		else
+		{
+			memmove(out, rsp.body, rsp.size);
+		}
+        /* let the user know data may have been truncated by returning the original response size */
+        *osize = rsp.size;
+	}
 
 exit:
     free_parsed_url(parsed_uri);

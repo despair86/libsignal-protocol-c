@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/* Web client unit test*/
+/* Web client unit test */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -29,19 +29,22 @@
 #include "http.h"
 
 const char *test_uri = "https://motherfuckingwebsite.com/";
+const char *test_uri_insecure = "http://www.gnu.org";
 
 main(argc, argv)
 char** argv;
 {
-    bool b;
+    bool b, tests_passed[2];
     size_t size;
     int r;
     unsigned char* out;
 
     printf("Web Client Unit Test\n");
     b = http_client_init();
-    out = alloca(8192);
-    memset(out, 0, 8192);
+    out = alloca(16384);
+	size = 16384;
+    memset(out, 0, 16384);
+
     if (!b)
     {
         printf("Failed to start web client\n");
@@ -56,9 +59,8 @@ char** argv;
 #else
         printf("Status: %d\nSize: %zu\nResponse:\n--->%s<---\n", r, size, out);
 #endif
-        printf("Simple HTTP GET unit test passed.\n");
-        http_client_cleanup();
-        return 0;
+        printf("Simple HTTPS GET unit test passed without error.\n");
+		tests_passed[0] = true;
     }
     else
     {
@@ -67,8 +69,53 @@ char** argv;
 #else
         printf("Status: %d\nSize: %zu\nResponse:\n--->%s<---\n", r, size, out);
 #endif
-        http_client_cleanup();
-        printf("Unit test failed!\n");
-        return -1;
+		if (r > 0)
+		{
+			printf("Unit test proceeded with errors.\n");
+			tests_passed[0] = true;
+		}
+		else
+			printf("Unit test failed!\n");
     }
+
+    memset(out, 0, 16384);
+	size = 16384;
+    r = http_request(test_uri_insecure, NULL, NULL, GET, HTTP_NONE, 0, out, &size, true);
+    if (r == 200)
+    {
+#ifdef _MSC_VER
+        printf("Status: %d\nSize: %d\nResponse:\n--->%s<---\n", r, size, out);
+#else
+        printf("Status: %d\nSize: %zu\nResponse:\n--->%s<---\n", r, size, out);
+#endif
+        printf("Simple HTTP GET unit test passed without error.\n");
+		tests_passed[1] = true;
+    }
+    else
+    {
+#ifdef _MSC_VER
+        printf("Status: %d\nSize: %d\nResponse:\n--->%s<---\n", r, size, out);
+#else
+        printf("Status: %d\nSize: %zu\nResponse:\n--->%s<---\n", r, size, out);
+#endif
+		if (r > 0)
+		{
+			printf("Unit test proceeded with errors.\n");
+			tests_passed[1] = true;
+		}
+		else
+			printf("Unit test failed!\n");
+    }
+
+    http_client_cleanup();
+	if (tests_passed[0] && tests_passed[1])
+	{
+		printf("All unit tests passed.\n");
+		return 0;
+	}
+	else
+	{
+		printf("One or more unit tests failed, see output for details.\n");
+		return -1;
+	}
 }
