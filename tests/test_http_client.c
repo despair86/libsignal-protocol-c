@@ -42,6 +42,8 @@ char** argv;
     printf("Web Client Unit Test\n");
     b = http_client_init();
     out = alloca(16384);
+	tests_passed[0] = false;
+	tests_passed[1] = false;
     size = 16384;
     memset(out, 0, 16384);
 
