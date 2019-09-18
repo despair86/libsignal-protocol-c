@@ -35,17 +35,20 @@ main(argc, argv)
 char** argv;
 {
     bool b, tests_passed[2];
-    size_t size;
     int r;
-    unsigned char* out;
+    struct HttpResponse rsp;
+    struct HttpRequest req;
 
     printf("Web Client Unit Test\n");
     b = http_client_init();
-    out = alloca(16384);
     tests_passed[0] = false;
     tests_passed[1] = false;
-    size = 16384;
-    memset(out, 0, 16384);
+    req.c_type = HTTP_NONE;
+    req.headers = NULL;
+    req.rq_data = NULL;
+    req.size = 0;
+    req.uri = test_uri;
+    req.verb = GET;
 
     if (!b)
     {
@@ -53,57 +56,65 @@ char** argv;
         return -1;
     }
 
-    r = http_request(test_uri, NULL, NULL, GET, HTTP_NONE, 0, out, &size, true);
+    r = http_request(&req, &rsp, true);
     if (r == 200)
     {
 #ifdef _MSC_VER
-        printf("Status: %d\nSize: %d\nResponse:\n--->%s<---\n", r, size, out);
+        printf("Status: %d\nSize: %d\nResponse:\n--->%s<---\n", r, rsp.size, rsp.body);
 #else
-        printf("Status: %d\nSize: %zu\nResponse:\n--->%s<---\n", r, size, out);
+        printf("Status: %d\nSize: %zu\nResponse:\n--->%s<---\n", r, rsp.size, rsp.body);
 #endif
         printf("Simple HTTPS GET unit test passed without error.\n");
         tests_passed[0] = true;
+        free(rsp.body);
     }
     else
     {
 #ifdef _MSC_VER
-        printf("Status: %d\nSize: %d\nResponse:\n--->%s<---\n", r, size, out);
+        printf("Status: %d\nSize: %d\nResponse:\n--->%s<---\n", r, rsp.size, rsp.body);
 #else
-        printf("Status: %d\nSize: %zu\nResponse:\n--->%s<---\n", r, size, out);
+        printf("Status: %d\nSize: %zu\nResponse:\n--->%s<---\n", r, rsp.size, rsp.body);
 #endif
         if (r > 0)
         {
             printf("Unit test proceeded with errors.\n");
             tests_passed[0] = true;
+            free(rsp.body);
         }
         else
             printf("Unit test failed!\n");
     }
 
-    memset(out, 0, 16384);
-    size = 16384;
-    r = http_request(test_uri_insecure, NULL, NULL, GET, HTTP_NONE, 0, out, &size, true);
+    req.c_type = HTTP_NONE;
+    req.headers = NULL;
+    req.rq_data = NULL;
+    req.size = 0;
+    req.uri = test_uri_insecure;
+    req.verb = GET;
+    r = http_request(&req, &rsp, true);
     if (r == 200)
     {
 #ifdef _MSC_VER
-        printf("Status: %d\nSize: %d\nResponse:\n--->%s<---\n", r, size, out);
+        printf("Status: %d\nSize: %d\nResponse:\n--->%s<---\n", r, rsp.size, rsp.body);
 #else
-        printf("Status: %d\nSize: %zu\nResponse:\n--->%s<---\n", r, size, out);
+        printf("Status: %d\nSize: %zu\nResponse:\n--->%s<---\n", r, rsp.size, rsp.body);
 #endif
         printf("Simple HTTP GET unit test passed without error.\n");
         tests_passed[1] = true;
+        free(rsp.body);
     }
     else
     {
 #ifdef _MSC_VER
-        printf("Status: %d\nSize: %d\nResponse:\n--->%s<---\n", r, size, out);
+        printf("Status: %d\nSize: %d\nResponse:\n--->%s<---\n", r, rsp.size, rsp.body);
 #else
-        printf("Status: %d\nSize: %zu\nResponse:\n--->%s<---\n", r, size, out);
+        printf("Status: %d\nSize: %zu\nResponse:\n--->%s<---\n", r, rsp.size, rsp.body);
 #endif
         if (r > 0)
         {
             printf("Unit test proceeded with errors.\n");
             tests_passed[1] = true;
+            free(rsp.body);
         }
         else
             printf("Unit test failed!\n");

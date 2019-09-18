@@ -117,6 +117,7 @@ bool http_client_init()
     }
     ca_certs = malloc(524288);
     assert(ca_certs);
+    memset(ca_certs, 0, 524288);
     s = fread(ca_certs, 1, 524288, certs);
     ca_certs[s] = 0;
     r = mbedtls_x509_crt_parse(&cacert, ca_certs, s + 1);
@@ -390,6 +391,7 @@ const char* data;
     {
         response->body = malloc(size + 1);
         assert(response->body);
+        memset(response->body, 0, size+1);
     }
     /* This covers the case where we pre-allocate a large response buffer:
      * we can just move on if we did. Otherwise, we need to enlarge the
@@ -466,41 +468,35 @@ static const struct http_funcs callbacks = {
  * to reissue the request with.
  * If *osize is 0, you get no response data, regardless of whether out is a valid pointer or not.
  */
-http_request(uri, headers, data, type, post_type, size, out, osize, debug)
-char *uri, *headers;
-unsigned char *data, *out;
-http_verb type;
-http_content_type post_type;
-size_t size, *osize;
+http_request(req, rsp, debug)
+struct HttpRequest *req;
+struct HttpResponse *rsp;
 bool debug;
 {
     int r, s, len;
     bool useTLS;
-#ifdef _MSC_VER
     char buf[1024], port[8], *rq;
-#else
-    char buf[1024], port[8], rq[size + 8192];
-#endif
     char *rq_type = 0, *rq_headers = 0;
     url_parser_url_t *parsed_uri;
-    struct HttpResponse rsp;
     struct http_roundtripper rt;
 
-#ifdef _MSC_VER
-    rq = alloca(size + 8192);
-#endif
-    http_init(&rt, callbacks, &rsp);
-    rsp.size = 0;
-    rsp.body = NULL;
-    rsp.code = 0;
+    if (!req || !rsp)
+        return -1;
 
-    if (!headers)
-        headers = "";
+    rq = alloca(req->size + 8192);
+    memset(rq, 0, req->size + 8192);
+    http_init(&rt, callbacks, rsp);
+    rsp->size = 0;
+    rsp->body = NULL;
+    rsp->code = 0;
+
+    if (!req->headers)
+        req->headers = "";
 
     parsed_uri = malloc(sizeof (url_parser_url_t));
     assert(parsed_uri);
     memset(parsed_uri, 0, sizeof (url_parser_url_t));
-    r = parse_url(uri, false, parsed_uri);
+    r = parse_url(req->uri, false, parsed_uri);
 
     if (r)
     {
@@ -542,7 +538,7 @@ bool debug;
         }
     }
 
-    switch (type)
+    switch (req->verb)
     {
     case GET:
         rq_type = "GET";
@@ -554,32 +550,40 @@ bool debug;
         break;
     }
 
-    switch (post_type)
+    switch (req->c_type)
     {
     case HTTP_ENCODED:
-        snprintf(buf, 1024, "Content-Type: application/x-www-form-urlencoded\r\nContent-Length: %zu", size);
+#ifdef _MSC_VER
+        snprintf(buf, 1024, "Content-Type: application/x-www-form-urlencoded\r\nContent-Length: %d", req->size);        
+#else
+        snprintf(buf, 1024, "Content-Type: application/x-www-form-urlencoded\r\nContent-Length: %zu", req->size);
+#endif
         rq_headers = strdup(buf);
         break;
     case HTTP_FORM_DATA:
         rq_headers = "Content-Type: multipart/form-data;boundary=\"LOKI_POST_DATA\"\r\n";
         break;
     case HTTP_JSON_DATA:
-        snprintf(buf, 1024, "Content-Type: application/json\r\nContent-Length: %zu", size);
+#ifdef _MSC_VER
+        snprintf(buf, 1024, "Content-Type: application/json\r\nContent-Length: %d", req->size);        
+#else
+        snprintf(buf, 1024, "Content-Type: application/json\r\nContent-Length: %zu", req->size);
+#endif
         rq_headers = strdup(buf);
     default:
         rq_headers = "";
         break;
     }
 
-    snprintf(rq, 8192, "%s %s HTTP/1.0\r\nHost: %s\r\nUser-Agent: %s\r\n%s%s\r\n\r\n", rq_type, parsed_uri->path, parsed_uri->host, client_ua, headers, rq_headers);
+    snprintf(rq, 8192, "%s %s HTTP/1.0\r\nHost: %s\r\nUser-Agent: %s\r\n%s%s\r\n\r\n", rq_type, parsed_uri->path, parsed_uri->host, client_ua, req->headers, rq_headers);
     if (debug)
         printf("Request headers:\n--->%s<---\n", rq);
 
     s = strlen(rq);
-    if (data && size)
+    if (req->rq_data && req->size)
     {
-        memcpy(rq + s, data, size);
-        s += size;
+        memcpy(rq + s, req->rq_data, req->size);
+        s += req->size;
     }
 
     if (useTLS)
@@ -632,63 +636,17 @@ bool debug;
         }
         while (r && s);
     }
-
-    /* If out is NULL, don't write anything. Perhaps they only wanted the HTTP status code? */
-    if (out)
-    {
-        /* If osize is null, what the fuck do you want? At this point all we can return is the status code */
-        if (!osize)
-            goto exit;
-
-        /* If osize is valid but 0, you can still get the response size in addition to the status code */
-        if (osize && !*osize)
-        {
-            *osize = rsp.size;
-            goto exit;
-        }
-
-        if (rsp.size > *osize)
-        {
-#ifndef NDEBUG
-#ifdef _MSC_VER
-            fprintf(stderr, "WARNING: Output truncated! Want %d bytes, wrote %d bytes\n", rsp.size, (*osize) - 1);
-#else
-            fprintf(stderr, "WARNING: Output truncated! Want %zu bytes, wrote %zu bytes\n", rsp.size, (*osize) - 1);
-#endif
-#endif
-            memmove(out, rsp.body, *osize);
-            out[(*osize) - 1] = 0;
-        }
-        else
-            memmove(out, rsp.body, rsp.size);
-
-        /* let the user know data may have been truncated by returning the original response size */
-        *osize = rsp.size;
-    }
-    else
-    {
-        if (!osize)
-            goto exit;
-        else
-        {
-            *osize = rsp.size;
-            goto exit;
-        }
-    }
+    rsp->body[rsp->size] = 0;
 
 exit:
     free_parsed_url(parsed_uri);
-    r = rsp.code;
+    r = rsp->code;
     http_free(&rt);
-    if (post_type == HTTP_ENCODED || post_type == HTTP_JSON_DATA)
+    if (req->c_type == HTTP_ENCODED || req->c_type == HTTP_JSON_DATA)
         free(rq_headers);
 
     /* Don't leave connections open */
     mbedtls_net_free(&server_fd);
-    /* Don't leak core, we already copied this to the user provided array
-     * so should be safe to free
-     */
-    free(rsp.body);
     return r;
 }
 
