@@ -211,6 +211,9 @@ So you wanna make a pull request? Please observe the following guidelines.
   [`_locales/en/messages.json`](_locales/en/messages.json).
   * We should probably use `catgets` or `gettext`, since we're not shackled by the limitations of
     a JS interpreter environment.
+  * On Windows NT, we can also write translation strings into the resource section. An internal
+    API will be provided for platform-independent localisation, including a fallback to the JSON
+    string tables on platforms where no other localisation facility exists.
   <!-- TODO:
     Other locales are generated automatically based on that file and then periodically
     uploaded to Transifex for translation. -->
