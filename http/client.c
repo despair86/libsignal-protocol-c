@@ -58,8 +58,18 @@ mbedtls_ssl_config conf;
 mbedtls_x509_crt cacert;
 unsigned char* ca_certs;
 
-/* imageboard ref just because */
+/* While strong cryptography is used throughout the library and
+ * app, marking the build is done for compliance with US export 
+ * restrictions on strong crypto. A build marked U cannot be
+ * re-exported to hostile/enemy nations. A build marked I has no
+ * such restriction, but the packager must take steps to ensure
+ * the code is indeed built outside the US.
+ */
+#ifdef _EXPORT_BUILD
+static char userAgent[] = "Loki_Pager/0.1 PolarSSL/2.16.2; I; ";
+#else
 static char userAgent[] = "Loki_Pager/0.1 PolarSSL/2.16.2; U; ";
+#endif
 
 typedef struct url_parser_url
 {
@@ -273,7 +283,7 @@ url_parser_url_t *parsed_url;
     return 0;
 }
 
-static void *memncat(a, an, b, bn, s)
+/*static void *memncat(a, an, b, bn, s)
 const void *a, *b;
 size_t an, bn, s;
 {
@@ -283,6 +293,7 @@ size_t an, bn, s;
     memcpy(p + an*s, b, bn * s);
     return p;
 }
+*/
 
 static bool open_tls_sock(host, port)
 char* host, *port;
@@ -363,10 +374,46 @@ void* opaque;
 const char* data;
 {
     struct HttpResponse* response = (struct HttpResponse*) opaque;
-    response->body = memncat(response->body, response->size, data, size, sizeof (char));
+    
+    /* If we got nothing in the response array, allocate a buffer
+     * large enough to fit the first chunk of data
+     */
+    if (!response->body)
+    {
+        response->body = malloc(size+1);
+        assert(response->body);
+    }
+    /* This covers the case where we pre-allocate a large response buffer:
+     * we can just move on if we did. Otherwise, we need to enlarge the
+     * existing buffer before we start writing to it.
+     * If we just allocated a buffer we can also skip this.
+     */
+    if (((response->size + size) > response->size) && response->size)
+    {
+        response->body = realloc(response->body, (response->size + size +1));
+        assert(response->body);
+    }
+    /* If we already have pre-existing data, move up and scrub the newly allocated
+     * core memory cells.  Then we can append to the existing response text.
+     */
+    if (response->body && response->size)
+    {
+        memset(response->body+response->size, '\0', size);
+        memmove(response->body + response->size, data, size);
+    }
+    else
+    {
+        memmove(response->body, data, size);
+    }
+    /* we only update the current size if we were able to write it correctly.
+     * (How do we cover failure cases? Do we need to cover any set of them?)
+     */
     response->size += size;
 }
 
+/* TODO: We need to implement this so we can read in storage server responses
+ * hidden in the headers
+ */
 static void response_header(opaque, ckey, nkey, cvalue, nvalue)
 void* opaque;
 const char* ckey, *cvalue;
@@ -419,7 +466,7 @@ bool debug;
 #endif
     http_init(&rt, callbacks, &rsp);
     rsp.size = 0;
-    rsp.body = malloc(0); /* Need a valid pointer, but we can embiggen as we go */
+    rsp.body = NULL; /* Need a valid pointer, but we can embiggen as we go */
     rsp.code = 0;
 
     if (!headers)
@@ -517,13 +564,6 @@ bool debug;
 
     mbedtls_ssl_close_notify(&ssl);
 
-    if (rsp.code != 200)
-    {
-        printf("An error occurred.\n");
-        printf("Server response:\n%s", rsp.body);
-        goto exit;
-    }
-
     if (out)
         memmove(out, rsp.body, rsp.size);
 
@@ -535,6 +575,13 @@ exit:
     http_free(&rt);
     if (post_type == HTTP_ENCODED || post_type == HTTP_JSON_DATA)
         free(rq_headers);
+    
+    /* Don't leave connections open */
+    mbedtls_net_free(&server_fd);
+    /* Don't leak core, we already copied this to the user provided array
+     * so should be safe to free
+     */
+    free(rsp.body);
     return r;
 }
 
@@ -543,7 +590,6 @@ void http_client_cleanup()
     mbedtls_x509_crt_free(&cacert);
     mbedtls_ctr_drbg_free(&ctr_drbg);
     mbedtls_entropy_free(&entropy);
-    mbedtls_net_free(&server_fd);
     mbedtls_ssl_free(&ssl);
     mbedtls_ssl_config_free(&conf);
     free(ca_certs);
