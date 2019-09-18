@@ -30,7 +30,7 @@
 #define NONCE_SIZE 8
 
 /* User must free() returned buffer when finished */
-static unsigned char* bufferToBase64(void* buf, size_t size)
+unsigned char* bufferToBase64(void* buf, size_t size)
 {
     unsigned char* tmp;
     size_t out_size;
@@ -85,7 +85,7 @@ unsigned char* calcPoW(int64_t timestamp, int32_t ttl, const unsigned char *pubK
 #ifdef _MSC_VER
     payload = alloca(data_size + 16384);
 #endif
-    /* scrub everything before we start, some platforms flip out on uninitialised buffers */
+    /* scrub everything before we start, some platforms flip out on writes to uninitialised buffers */
     mbedtls_platform_zeroize(payload, data_size + 16384);
     snprintf(payload, data_size + 16384, "%" PRIi64 "%d%s%s", timestamp, ttl, pubKey, data);
     diffTgt = getDiffTgt(ttl, strlen(payload));

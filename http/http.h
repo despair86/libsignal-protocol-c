@@ -114,7 +114,7 @@ extern "C" {
     /* Cleans up any persistent data used by the web client. */
     void http_client_cleanup();
 
-    /* A oneshot HTTP client */
+    /* A oneshot HTTP client. Probably even reentrant, in case of redirection. */
     /* IN: uri, headers, data, verb, content-type, request size, output buffer size */
     /* OUT: response, response size */
     /* RETURN: HTTP status code in [ER]AX (Or whatever the machine ABI designates return values in.) 

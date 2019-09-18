@@ -56,7 +56,7 @@ mbedtls_ctr_drbg_context ctr_drbg;
 mbedtls_ssl_context ssl;
 mbedtls_ssl_config conf;
 mbedtls_x509_crt cacert;
-unsigned char* ca_certs;
+unsigned char* ca_certs = NULL;
 
 /* While strong cryptography is used throughout the library and
  * app, marking the build is done for compliance with US export 
@@ -85,6 +85,8 @@ typedef struct url_parser_url
 static const char* seed = "Loki Pager HTTPS client";
 
 /* If this fails, do NOT use the HTTP client */
+/* Must call http_client_cleanup() before attempting to recover
+ * from a failed web client boot */
 bool http_client_init()
 {
 #ifdef _WIN32
@@ -101,7 +103,7 @@ bool http_client_init()
     mbedtls_ssl_init(&ssl);
     mbedtls_ssl_config_init(&conf);
     /* Everything below this comment is persistent throughout the app's 
-     * lifetime */
+     * lifetime. */
     mbedtls_x509_crt_init(&cacert);
     mbedtls_entropy_init(&entropy);
     mbedtls_ctr_drbg_init(&ctr_drbg);
@@ -134,7 +136,7 @@ bool http_client_init()
         build = (DWORD) (HIWORD(version));
     ua = malloc(512);
     arch = getenv("PROCESSOR_ARCHITECTURE");
-    snprintf(ua, 512, "%sWindows NT %u.%u.%u; %s", userAgent, major, minor, build, arch);
+    snprintf(ua, 512, "%sWindows NT %lu.%lu.%lu; %s", userAgent, major, minor, build, arch);
     client_ua = ua;
 #else
     ua = malloc(512);
@@ -151,13 +153,12 @@ bool http_client_init()
     return true;
 }
 
-static bool initTLS()
+static void initTLS()
 {
     /* Clear only previous connection state */
     mbedtls_net_init(&server_fd);
     mbedtls_ssl_init(&ssl);
     mbedtls_ssl_config_init(&conf);
-    return true;
 }
 
 static void free_parsed_url(url_parsed)
@@ -292,8 +293,7 @@ size_t an, bn, s;
     memcpy(p, a, an * s);
     memcpy(p + an*s, b, bn * s);
     return p;
-}
- */
+}*/
 
 /* Insecure mode */
 static bool open_http_sock(host, port)
@@ -452,11 +452,17 @@ static const struct http_funcs callbacks = {
     response_code,
 };
 
-/* A one-shot HTTP client. */
-/* In: URI (string), data (string, may be null) + size, extra headers (also optional), request type */
-/* Out: Response, size of response */
-
-/* Returns: HTTP status code in [ER]AX */
+/* A oneshot HTTP client. Probably even reentrant, in case of redirection. */
+/* IN: uri, headers, data, verb, content-type, request size, output buffer size */
+/* OUT: response, response size */
+/* RETURN: HTTP status code in [ER]AX (Or whatever the machine ABI designates return values in.) 
+ * Writes at most size-1 bytes to user provided buffer. User can check the resulting value of osize,
+ * and reallocate+reissue the request to get all the data. */
+/* If out and osize are NULL, all you will be able to get is the HTTP status code. 
+ * If out is invalid, but osize _isn't_, we can give you the size of the resulting buffer with which
+ * to reissue the request with.
+ * If *osize is 0, you get no response data, regardless of whether out is a valid pointer or not.
+ */
 http_request(uri, headers, data, type, post_type, size, out, osize, debug)
 char *uri, *headers;
 unsigned char *data, *out;
@@ -691,6 +697,8 @@ void http_client_cleanup()
     mbedtls_ssl_free(&ssl);
     mbedtls_net_free(&server_fd);
     mbedtls_ssl_config_free(&conf);
-    free(ca_certs);
-    free(client_ua);
+    if (ca_certs) free(ca_certs);
+    if (client_ua) free(client_ua);
+    ca_certs = NULL;
+    client_ua = NULL;
 }

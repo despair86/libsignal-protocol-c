@@ -34,6 +34,8 @@ extern "C" {
 
     /* User must manually scrub+free returned buffer */
     unsigned char* calcPoW(int64_t timestamp, int32_t ttl, const unsigned char *pubKey, const unsigned char *data, size_t data_size);
+    /* this is probably useful elsewhere, libloki as such will contain these util routines */
+    unsigned char* bufferToBase64(void* buf, size_t size);
 
 
 #ifdef __cplusplus
