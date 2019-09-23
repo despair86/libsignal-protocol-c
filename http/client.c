@@ -39,6 +39,9 @@ strtok_r(char * __restrict s, const char * __restrict delim, char * * __restrict
 #include <netdb.h>
 #endif
 #include "http.h"
+#ifdef __sun
+#include <alloca.h>
+#endif
 
 /* PolarSSL */
 #include <mbedtls/ssl.h>
@@ -78,8 +81,6 @@ typedef struct url_parser_url
     int port;
     char *path;
     char *query_string;
-    int host_exists;
-    char *host_ip;
 } url_parser_url_t;
 
 static const char* seed = "Loki Pager HTTPS client";
@@ -178,20 +179,16 @@ url_parser_url_t *url_parsed;
     free(url_parsed);
 }
 
-static parse_url(url, verify_host, parsed_url)
+static void parse_url(url, parsed_url)
 char *url;
-bool verify_host;
 url_parser_url_t *parsed_url;
 {
     char *local_url;
     char *token;
     char *token_host;
     char *host_port;
-    char *host_ip;
-
     char *token_ptr;
     char *host_token_ptr;
-
     char *path = NULL;
 
     /* Copy our string */
@@ -208,33 +205,12 @@ url_parser_url_t *parsed_url;
         host_port = (char *) calloc(1, sizeof (char));
 
     token_host = strtok_r(host_port, ":", &host_token_ptr);
-    parsed_url->host_ip = NULL;
     if (token_host)
     {
         parsed_url->host = strdup(token_host);
-
-        if (verify_host)
-        {
-            struct hostent *host;
-            host = gethostbyname(parsed_url->host);
-            if (host != NULL)
-            {
-                parsed_url->host_ip = inet_ntoa(* (struct in_addr *) host->h_addr);
-                parsed_url->host_exists = 1;
-            }
-            else
-            {
-                parsed_url->host_exists = 0;
-            }
-        }
-        else
-        {
-            parsed_url->host_exists = -1;
-        }
     }
     else
     {
-        parsed_url->host_exists = -1;
         parsed_url->host = NULL;
     }
 
@@ -283,19 +259,7 @@ url_parser_url_t *parsed_url;
 
     free(local_url);
     free(host_port);
-    return 0;
 }
-
-/*static void *memncat(a, an, b, bn, s)
-const void *a, *b;
-size_t an, bn, s;
-{
-    char *p = malloc(s * (an + bn));
-    memset(p, '\0', s * (an + bn));
-    memcpy(p, a, an * s);
-    memcpy(p + an*s, b, bn * s);
-    return p;
-}*/
 
 /* Insecure mode */
 static bool open_http_sock(host, port)
@@ -421,13 +385,16 @@ const char* data;
     response->size += size;
 }
 
-/* TODO: We need to implement this so we can read in storage server responses
- * hidden in the headers
- */
 static void response_header(opaque, ckey, nkey, cvalue, nvalue)
 void* opaque;
 const char* ckey, *cvalue;
 {
+    /* The internal function that collects the
+     * response headers does NOT terminate the pieces,
+     * only the whole buffer resulting in: "keyvalue\0"
+     * which is why the function also passes the size of each
+     * field
+     */
     char *key, *value;
 
     /* print the key */
@@ -457,21 +424,13 @@ static const struct http_funcs callbacks = {
 };
 
 /* A oneshot HTTP client. Probably even reentrant, in case of redirection. */
-/* IN: uri, headers, data, verb, content-type, request size, output buffer size */
-/* OUT: response, response size */
-/* RETURN: HTTP status code in [ER]AX (Or whatever the machine ABI designates return values in.) 
- * Writes at most size-1 bytes to user provided buffer. User can check the resulting value of osize,
- * and reallocate+reissue the request to get all the data. */
-
-/* If out and osize are NULL, all you will be able to get is the HTTP status code. 
- * If out is invalid, but osize _isn't_, we can give you the size of the resulting buffer with which
- * to reissue the request with.
- * If *osize is 0, you get no response data, regardless of whether out is a valid pointer or not.
- */
-http_request(req, rsp, debug)
+/* IN: http request object, debug bit for unit testing */
+/* OUT: http response object */
+/* RETURN: HTTP status code in [ER]AX (Or whatever the machine ABI designates return values in.) */
+http_request(req, rsp, reserved)
 struct HttpRequest *req;
 struct HttpResponse *rsp;
-bool debug;
+bool reserved;
 {
     int r, s, len;
     bool useTLS;
@@ -496,17 +455,17 @@ bool debug;
     parsed_uri = malloc(sizeof (url_parser_url_t));
     assert(parsed_uri);
     memset(parsed_uri, 0, sizeof (url_parser_url_t));
-    r = parse_url(req->uri, false, parsed_uri);
-
-    if (r)
-    {
-        printf("Invalid URI pathspec\n");
-        return -1;
-    }
+    parse_url(req->uri, parsed_uri);
 
     initTLS();
 
     /* get URI protocol scheme, set port if blank */
+    if (!parsed_uri->protocol)
+    {
+        printf("Invalid URI\n");
+        return -1;
+    }
+    
     if (!strcmp("https", parsed_uri->protocol))
         useTLS = true;
     else
@@ -516,8 +475,6 @@ bool debug;
         parsed_uri->port = 443;
     else if (!parsed_uri->port && !useTLS)
         parsed_uri->port = 80;
-
-    /*printf("connecting to %s on port %d...", parsed_uri->host, parsed_uri->port);*/
 
     snprintf(port, 8, "%d", parsed_uri->port);
 
@@ -576,7 +533,7 @@ bool debug;
     }
 
     snprintf(rq, 8192, "%s %s HTTP/1.0\r\nHost: %s\r\nUser-Agent: %s\r\n%s%s\r\n\r\n", rq_type, parsed_uri->path, parsed_uri->host, client_ua, req->headers, rq_headers);
-    if (debug)
+    if (reserved)
         printf("Request headers:\n--->%s<---\n", rq);
 
     s = strlen(rq);
@@ -636,6 +593,11 @@ bool debug;
         }
         while (r && s);
     }
+    /* Oracle libumem likes placing objects contiguously in core, so if we
+     * fail to terminate the buffer, on my machine, it lands straight into
+     * a slab where one of the pieces of the Netscape root certificate
+     * trust store was loaded into core by same.
+     */
     rsp->body[rsp->size] = 0;
 
 exit:

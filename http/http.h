@@ -133,10 +133,10 @@ extern "C" {
     void http_client_cleanup();
 
     /* A oneshot HTTP client. Probably even reentrant, in case of redirection. */
-    /* IN: http request object */
+    /* IN: http request object, FALSE */
     /* OUT: http response object */
     /* RETURN: HTTP status code in [ER]AX (Or whatever the machine ABI designates return values in.) */
-    int http_request(struct HttpRequest *req, struct HttpResponse *rsp, bool debug);
+    int http_request(struct HttpRequest *req, struct HttpResponse *rsp, bool reserved);
 
 #if defined(__cplusplus)
 }
