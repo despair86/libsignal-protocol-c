@@ -21,74 +21,79 @@
 #include <windows.h>
 #endif
 
-/* On Linux only ncurses exists, duh */
-#if defined(__linux__)
-#include <ncurses/curses.h>
-#else
-/* We can use AT&T or BSD curses too */
-#include <curses.h>
-#endif
+#include <cdk.h>
+
+char *XCursesProgramName = "Loki Messenger";
 
 #include "http.h"
 #define __LABEL__ "P A G E R   v e r s i o n   v 0 . 1"
 
-char loki_logo[] = {
-    "        .o0l.\n"
-    "       ;kNMNo.\n"
-    "     ;kNMMXd'\n"
-    "   ;kNMMXd'                 .ld:             ,ldxkkkdl,.     'dd;     ,odl.  ;dd\n"
-    " ;kNMMXo.  'ol.             ,KMx.          :ONXkollokXN0c.   cNMo   .dNNx'   dMW\n"
-    "dNMMM0,   ;KMMXo.           ,KMx.        .oNNx'      .dNWx.  :NMo .cKWk;     dMW\n"
-    "'dXMMNk;  .;ONMMXo'         ,KMx.        :NMx.         oWWl  cNWd;ON0:.      oMW\n"
-    "  'dXMMNk;.  ;kNMMXd'       ,KMx.        lWWl          :NMd  cNMNNMWd.       dMW\n"
-    "    'dXMMNk;.  ;kNMMXd'     ,KMx.        :NMx.         oWWl  cNMKolKWO,      dMW\n"
-    "      .oXMMK;   ,0MMMNd.    ,KMx.        .dNNx'      .dNWx.  cNMo  .dNNd.    dMW\n"
-    "        .lo'  'dXMMNk;.     ,KMXxdddddl.   :ONNkollokXN0c.   cNMo    ;OWKl.  dMW\n"
-    "            'dXMMNk;        .lddddddddo.     ,ldxkkkdl,.     'od,     .cdo;  ;dd\n"
-    "          'dXMMNk;          \n"
-    "         .oNMNk;             " __LABEL__ "\n"
-    "          .l0l.             \n"
+char *loki_logo[15] = {
+    "</01>        .o0l.           <!01>",
+    "</01>       ;kNMNo.          <!01>",
+    "</01>     ;kNMMXd'           <!01>",
+    "</01>   ;kNMMXd'             <!01>  .ld:             ,ldxkkkdl,.     'dd;     ,odl.  ;dd",
+    "</01> ;kNMMXo.  'ol.         <!01>  ,KMx.          :ONXkollokXN0c.   cNMo   .dNNx'   dMW",
+    "</01>dNMMM0,   ;KMMXo.       <!01>  ,KMx.        .oNNx'      .dNWx.  :NMo .cKWk;     dMW",
+    "</01>'dXMMNk;  .;ONMMXo'     <!01>  ,KMx.        :NMx.         oWWl  cNWd;ON0:.      oMW",
+    "</01>  'dXMMNk;.  ;kNMMXd'   <!01>  ,KMx.        lWWl          :NMd  cNMNNMWd.       dMW",
+    "</01>    'dXMMNk;.  ;kNMMXd' <!01>  ,KMx.        :NMx.         oWWl  cNMKolKWO,      dMW",
+    "</01>      .oXMMK;   ,0MMMNd.<!01>  ,KMx.        .dNNx'      .dNWx.  cNMo  .dNNd.    dMW",
+    "</01>        .lo'  'dXMMNk;. <!01>  ,KMXxdddddl.   :ONNkollokXN0c.   cNMo    ;OWKl.  dMW",
+    "</01>            'dXMMNk;    <!01>  .lddddddddo.     ,ldxkkkdl,.     'od,     .cdo;  ;dd",
+    "</01>          'dXMMNk;      <!01>",
+    "</01>         .oNMNk;        <!01>   " __LABEL__,
+    "</01>          .l0l.         <!01>"
 };
 
 main(argc, argv)
 char** argv;
 {
-    int x,y,i;
+    CDKSCREEN *cdkscreen;
+    CDKSCROLL *dowList;
+    CDKLABEL *title, *loki_label, *ua_label;
+    WINDOW *subWindow;
+    CDK_PARAMS params;
+    char *text[1], *ua_text[1];
 
-    initscr();
-    cbreak();
-    noecho();
-    nonl();
-    intrflush(stdscr, FALSE);
-    keypad(stdscr, TRUE);
-    start_color();
+    CDKparseParams(argc, argv, &params, "s:" CDK_CLI_PARAMS);
+    /* Start curses. */
+    (void) initCDKScreen(NULL);
+    initCDKColor();
+    curs_set(0);
+
     init_pair(1, COLOR_GREEN, COLOR_BLACK);
-    for(i = 0; i < sizeof(loki_logo); i++)
-    {
-        if (loki_logo[i] == 0)
-            break;
-        getyx(stdscr, y, x);
-        if (x > 25)
-            addch(loki_logo[i]);
-        else
-            addch(loki_logo[i]|COLOR_PAIR(1));
-    }
-    printw("\n\n");
-    refresh();
+    /* Create a basic window. */
+    subWindow = newwin(LINES - 5, COLS - 10, 2, 5);
+
+    /* Start Cdk. */
+    cdkscreen = initCDKScreen(subWindow);
+    /* Box our window. */
+    box(subWindow, ACS_VLINE, ACS_HLINE);
+    wrefresh(subWindow);
+    text[0] = "Welcome to Loki Messenger";
+    title = newCDKLabel(cdkscreen, CENTER, 0,
+                        (CDK_CSTRING2) text, 1,
+                        FALSE, FALSE);
+    ua_text[0] = alloca(512);
+    loki_label = newCDKLabel(cdkscreen, CENTER, CENTER, (CDK_CSTRING2) loki_logo, 15, FALSE, FALSE);
+    
     if (http_client_init())
     {
-        printw("HTTP Client User-Agent: %s\n", client_ua);
-        refresh();
+        sprintf(ua_text[0], "HTTP Client User-Agent: %s\n", client_ua);
+        ua_label = newCDKLabel(cdkscreen, CENTER, LINES - 10, (CDK_CSTRING2)ua_text, 1, FALSE, FALSE);
+        refreshCDKScreen(cdkscreen);
+        waitCDKLabel (ua_label, ' ');
         http_client_cleanup();
     }
     else
     {
         printw("failed to start web client\n");
-        refresh();
+        refreshCDKScreen(cdkscreen);
     }
-    printw("\nPress any key to exit\n");
-    refresh();
-    getch();
-    endwin();
+    destroyCDKLabel(title);
+    eraseCursesWindow(subWindow);
+    destroyCDKScreen(cdkscreen);
+    endCDK();
     return 0;
 }

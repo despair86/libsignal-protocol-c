@@ -41,8 +41,25 @@ IF(BUILD_TESTING)
 ENDIF(BUILD_TESTING)
 
 if(MSVC)
-include_directories(include)
 add_definitions(-D_CRT_SECURE_NO_DEPRECATE -Dsnprintf=_snprintf)
+include_directories(include/msvc)
+endif()
+
+# On Windows targets, we use these to find curses, check, and cdk
+# On all others, we only need CDK
+include_directories(include/cdk)
+link_directories(lib)
+
+if(WIN32)
+  find_library(CURSES_FOUND NAMES curses pdcurses pdcursesstatic ncurses ncursesw PATHS lib)
+  if (NOT CURSES_FOUND)
+    MESSAGE(FATAL_ERROR "No curses library found, see docs")
+  endif()
+endif()
+
+find_library(CDK_FOUND NAMES cdk PATHS lib)
+if(NOT CDK_FOUND)
+  MESSAGE(FATAL_ERROR "Must compile/load curses development kit, see docs")
 endif()
 
 IF(CMAKE_COMPILER_IS_GNUCC OR CMAKE_C_COMPILER_ID MATCHES "Clang")

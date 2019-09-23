@@ -51,3 +51,6 @@ test_web_client
 test_session_cipher
 test_group_cipher
 
+# only keep include/stdint.h
+include/
+lib/
