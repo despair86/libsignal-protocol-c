@@ -61,7 +61,7 @@ We can use the old NextSTEP implementation of BSD curses, as long as it has some
       but you will need a POSIX-compatible `sh` and `make` at a minimum.
       - The canonical target name for this configuration is `i[3-7]86-pc-winnt3.51` or `x86_64-pc-winnt5.2` even for Windows 10.
       - You will also need an implementation of POSIX `opendir(3C)` and friends, one will be provided shortly.
-      - In the meantime, a statically linked `libcdk.dll` and `cdk.lib` [will be provided ](https://snowlight.net/files/cdk_win32.tar.xz)
+      - In the meantime, a statically linked `libcdk.dll` and `cdk.lib` [will be provided](https://snowlight.net/files/cdk_win32.tar.xz)
         (requires nothing except `msvcrt.dll`, as `libgcc` and win32 native PDCurses are linked into the shared object.)
       - some environment variables:
         - `CC=cl`
@@ -85,7 +85,8 @@ We can use the old NextSTEP implementation of BSD curses, as long as it has some
       `lib/libcurses.a`. Ncurses automatically installs its headers and libraries in the expected locations.
     - If using the GNU build system, set the installation prefix to this folder, then rename the resulting library to `libcurses.a`.
 5.  Compile and load the Curses Development Kit (CDK) - https://invisible-island.net/cdk/, set the prefix to this folder.
-    - This installs the library and headers to ./lib and ./include respectively. 
+    - This installs the library and headers to ./lib and ./include respectively.
+    - It is technically possible to use the pre-built `libcdk.dll` above directly, if desired.
 6.  Alternatively, you can use MSYS2 `pacman` to install these from the MSYS2 AUR
     (along with the base `mingw-w64-$ARCH-[gcc|clang]` package)
 
