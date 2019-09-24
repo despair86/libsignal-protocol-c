@@ -47,7 +47,7 @@ endif()
 
 # On Windows targets, we use these to find curses, check, and cdk
 # On all others, we only need CDK
-include_directories(include/cdk)
+include_directories(include)
 link_directories(lib)
 
 IF(CMAKE_COMPILER_IS_GNUCC OR CMAKE_C_COMPILER_ID MATCHES "Clang")
