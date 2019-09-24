@@ -19,7 +19,7 @@ set(LIBS ${LIBS}
 	${CMAKE_DL_LIBS}
 	signal-protocol-c
 	cdk
-	curses
+	${CURSES_LIB}
 )
 
 include_directories(. ../src ../http ../crypto)

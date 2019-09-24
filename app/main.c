@@ -46,31 +46,16 @@ char *loki_logo[15] = {
     "</01>          .l0l.         <!01>"
 };
 
-main(argc, argv)
-char** argv;
+static CDKSCREEN *cdkscreen;
+
+static void splash(WINDOW *w)
 {
-    CDKSCREEN *cdkscreen;
-    CDKSCROLL *dowList;
     CDKLABEL *title, *loki_label, *ua_label;
-    WINDOW *subWindow;
-    CDK_PARAMS params;
-    char *text[1], *ua_text[1];
-
-    CDKparseParams(argc, argv, &params, "s:" CDK_CLI_PARAMS);
-    /* Start curses. */
-    (void) initCDKScreen(NULL);
-    initCDKColor();
-    curs_set(0);
-
-    init_pair(1, COLOR_GREEN, COLOR_BLACK);
-    /* Create a basic window. */
-    subWindow = newwin(LINES - 5, COLS - 10, 2, 5);
-
-    /* Start Cdk. */
-    cdkscreen = initCDKScreen(subWindow);
+    char *text[1], *ua_text[2];
+    
     /* Box our window. */
-    box(subWindow, ACS_VLINE, ACS_HLINE);
-    wrefresh(subWindow);
+    box(w, ACS_VLINE, ACS_HLINE);
+    wrefresh(w);
     text[0] = "Welcome to Loki Messenger";
     title = newCDKLabel(cdkscreen, CENTER, 0,
                         (CDK_CSTRING2) text, 1,
@@ -83,7 +68,7 @@ char** argv;
         sprintf(ua_text[0], "HTTP Client User-Agent: %s\n", client_ua);
         ua_label = newCDKLabel(cdkscreen, CENTER, LINES - 10, (CDK_CSTRING2)ua_text, 1, FALSE, FALSE);
         refreshCDKScreen(cdkscreen);
-        waitCDKLabel (ua_label, ' ');
+        waitCDKLabel (ua_label, (char)0);
         http_client_cleanup();
     }
     else
@@ -91,7 +76,31 @@ char** argv;
         printw("failed to start web client\n");
         refreshCDKScreen(cdkscreen);
     }
-    destroyCDKLabel(title);
+}
+
+main(argc, argv)
+char** argv;
+{
+    WINDOW *subWindow;
+    CDK_PARAMS params;
+
+    CDKparseParams(argc, argv, &params, "s:" CDK_CLI_PARAMS);
+    
+    /* Start curses. */
+    (void) initCDKScreen(NULL);
+    initCDKColor();
+    curs_set(0);
+
+    init_pair(1, COLOR_GREEN, COLOR_BLACK);
+    /* Create a basic window. */
+    subWindow = newwin(LINES - 5, COLS - 10, 2, 5);
+
+    /* Start Cdk. */
+    cdkscreen = initCDKScreen(subWindow);
+    
+    /* Display the first window, and start the web client */
+    splash(subWindow);
+
     eraseCursesWindow(subWindow);
     destroyCDKScreen(cdkscreen);
     endCDK();
