@@ -55,7 +55,10 @@ We can use the old NextSTEP implementation of BSD curses, as long as it has some
 4.  Compile and load either of PDCurses or `ncurses`. 
     - For PDCurses, you may have to copy/symlink `$LIB/wincon/pdcurses.lib` to 
       `$LIB/curses.lib`. Ncurses automatically installs its headers and libraries in the expected locations.
-    - The PDCurses headers are provided as a convenience, and should be API compatible if linking against ncurses.
+    - It may still be possible to use the GNU build system to configure CDK (where `CC = cl`, `CXX = cl -TP`, etc), but using bash+native windows tools
+      has not been tested since the mid-90s; your build system will probably be detected as `i686-pc-winnt3.1`
+      - By the time Cygwin and Mingw32 first appeared, Windows NT 4.0 was already out, and any efforts to make the GNU
+        Build System function natively were largely abandoned.
 
 ### Windows (using msys2 or mingw-w64)
 
@@ -69,8 +72,10 @@ We can use the old NextSTEP implementation of BSD curses, as long as it has some
 4.  Compile and load either of PDCurses or `ncurses`. 
     - For PDCurses, you may have to copy/symlink `$LIB/wincon/libpdcursesstatic.a` to 
       `$LIB/libcurses.a`. Ncurses automatically installs its headers and libraries in the expected locations.
-    - The PDCurses headers are provided as a convenience, and should be API compatible if linking against ncurses.
-5.  Alternatively, you can use MSYS2 `pacman` to install these from the MSYS2 AUR
+    - If using the GNU build system, set the installation prefix to this folder, then rename the resulting library to `libcurses.a`.
+5.  Compile and load the Curses Development Kit (CDK) - https://invisible-island.net/cdk/, set the prefix to this folder.
+    - This installs the library and headers to ./lib and ./include respectively. 
+6.  Alternatively, you can use MSYS2 `pacman` to install these from the MSYS2 AUR
     (along with the base `mingw-w64-$ARCH-[gcc|clang]` package)
 
 If you are developing on an older version of Windows, you should probably get the last version
