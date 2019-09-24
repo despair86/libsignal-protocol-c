@@ -44,7 +44,7 @@ We can use the old NextSTEP implementation of BSD curses, as long as it has some
 
 ### Windows (using Microsoft C)
 
-1.  **Windows 7 only:**
+1.  **Windows 7 or earlier:**
     * Install Microsoft .NET Framework 3.5:
       (See Programs and Features/Optional Features)
     * Install Windows SDK version 7.0: https://developer.microsoft.com/en-us/windows/downloads/sdk-archive
@@ -53,16 +53,27 @@ We can use the old NextSTEP implementation of BSD curses, as long as it has some
 3.  Install cURL from https://curl.haxx.se, we use it only to download the Netscape Navigator root 
     cert bundle, manually grab from: https://curl.haxx.se/ca/cacert.pem and save as `rootcerts.pem`
 4.  Compile and load either of PDCurses or `ncurses`. 
-    - For PDCurses, you may have to copy/symlink `$LIB/wincon/pdcurses.lib` to 
-      `$LIB/curses.lib`. Ncurses automatically installs its headers and libraries in the expected locations.
-    - It may still be possible to use the GNU build system to configure CDK (where `CC = cl`, `CXX = cl -TP`, etc), but using bash+native windows tools
-      has not been tested since the mid-90s; your build system will probably be detected as `i686-pc-winnt3.1`
-      - By the time Cygwin and Mingw32 first appeared, Windows NT 4.0 was already out, and any efforts to make the GNU
-        Build System function natively were largely abandoned.
+    - For PDCurses, you may have to copy/symlink `pdcurses/win[con|gui]/pdcurses.lib` to 
+      `lib/curses.lib`. Ncurses automatically installs its headers and libraries in the expected locations.
+      - You may also need `<stdint.h>`, the header in-tree can be copied to the PDCurses root where it will be
+        picked up by its own build system.
+    - It is still possible to use the GNU Build System to configure CDK with Microsoft C,
+      but you will need a POSIX-compatible `sh` and `make` at a minimum.
+      - The canonical target name for this configuration is `i[3-7]86-pc-winnt3.51` or `x86_64-pc-winnt5.2` even for Windows 10.
+      - You will also need an implementation of POSIX `opendir(3C)` and friends, one will be provided shortly.
+      - In the meantime, a statically linked `cdk.dll` and `cdk.lib` will be provided 
+        (requires nothing except `msvcrt.dll`, as `libgcc` and friends are linked into the shared object)
+      - some environment variables:
+        - `CC=cl`
+        - `CXX=cl -TP`
+        - `CPPFLAGS=-I[path to pdcurses root]`
+        - `LIBS=-link -LIBPATH:[path to pdcurses/wincon or pdcurses/wingui] pdcurses.lib user32.lib gdi32.lib advapi32.lib kernel32.lib`
+      - You may yet need GNU Binutils if for some reason, the build system cannot use 
+        `LIB(1)` or `DUMPBIN(1)` (for `ar(1)` and `nm(1)`)
 
 ### Windows (using msys2 or mingw-w64)
 
-1.  **Windows 7 only:**
+1.  **Windows 7 or earlier:**
     * Install Microsoft .NET Framework 3.5:
       (See Programs and Features/Optional Features)
 2.  Install CMake from https://cmake.org/. 32-bit build is recommended even in 64-bit installs 
@@ -70,8 +81,8 @@ We can use the old NextSTEP implementation of BSD curses, as long as it has some
 3.  Install cURL from https://curl.haxx.se, we use it only to download the Netscape Navigator root 
     cert bundle, manually grab from: https://curl.haxx.se/ca/cacert.pem and save as `rootcerts.pem`
 4.  Compile and load either of PDCurses or `ncurses`. 
-    - For PDCurses, you may have to copy/symlink `$LIB/wincon/libpdcursesstatic.a` to 
-      `$LIB/libcurses.a`. Ncurses automatically installs its headers and libraries in the expected locations.
+    - For PDCurses, you may have to copy/symlink `pdcurses/win[con|gui]/libpdcursesstatic.a` to 
+      `lib/libcurses.a`. Ncurses automatically installs its headers and libraries in the expected locations.
     - If using the GNU build system, set the installation prefix to this folder, then rename the resulting library to `libcurses.a`.
 5.  Compile and load the Curses Development Kit (CDK) - https://invisible-island.net/cdk/, set the prefix to this folder.
     - This installs the library and headers to ./lib and ./include respectively. 
