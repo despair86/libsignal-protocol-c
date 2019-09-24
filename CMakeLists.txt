@@ -17,6 +17,10 @@ SET(LIB_INSTALL_DIR "${CMAKE_INSTALL_PREFIX}/lib${LIB_SUFFIX}" CACHE STRING "The
 SET(INCLUDE_INSTALL_DIR "${CMAKE_INSTALL_PREFIX}/include" CACHE PATH "The directory the headers are installed in")
 SET(INSTALL_PKGCONFIG_DIR "${LIB_INSTALL_DIR}/pkgconfig" CACHE PATH "Installation directory for pkgconfig (.pc) files")
 
+if(WIN32)
+OPTION(USE_SEPARATE_CURSES "Do not use a pre-built CDK+curses." OFF)
+endif()
+
 # libm is fully integrated into libc on windows
 if (WIN32)
 SET(M_LIB "")
@@ -35,7 +39,7 @@ endif()
 CHECK_SYMBOL_EXISTS(memset_s "string.h" HAVE_MEMSET_S)
 
 IF(CMAKE_SYSTEM_NAME MATCHES "Windows")
-  CHECK_SYMBOL_EXISTS(SecureZeroMemory "Windows.h;WinBase.h" HAVE_SECUREZEROMEMORY)
+  CHECK_SYMBOL_EXISTS(SecureZeroMemory "windows.h;winbase.h" HAVE_SECUREZEROMEMORY)
 ENDIF(CMAKE_SYSTEM_NAME MATCHES "Windows")
 
 IF(BUILD_TESTING)
@@ -53,6 +57,7 @@ endif()
 # On Windows targets, we use these to find curses, check, and cdk
 # On all others, we only need CDK
 include_directories(include)
+include_directories(include/cdk)
 link_directories(lib)
 
 IF(CMAKE_COMPILER_IS_GNUCC OR CMAKE_C_COMPILER_ID MATCHES "Clang")

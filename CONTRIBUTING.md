@@ -63,6 +63,8 @@ We can use the old NextSTEP implementation of BSD curses, as long as it has some
       - You will also need an implementation of POSIX `opendir(3C)` and friends, one will be provided shortly.
       - In the meantime, a statically linked `libcdk.dll` and `cdk.lib` [will be provided](https://snowlight.net/files/cdk_win32.tar.xz)
         (requires nothing except `msvcrt.dll`, as `libgcc` and win32 native PDCurses are linked into the shared object.)
+        - extract the arch-specific folder (32 or 64) to this folder such that `cdk.h` and `stdint.h` are in the same folder.
+          This places `cdk.lib` in the `lib/` folder.
       - some environment variables:
         - `CC=cl`
         - `CXX=cl -TP`
@@ -87,6 +89,7 @@ We can use the old NextSTEP implementation of BSD curses, as long as it has some
 5.  Compile and load the [Curses Development Kit (CDK)](https://github.com/despair86/cdk-win32). set the prefix to this folder.
     - This installs the library and headers to ./lib and ./include respectively.
     - It is technically possible to use the pre-built `libcdk.dll` above directly, if desired.
+      - extract the arch-specific folder (32 or 64) to this folder such that `cdk.h` and `stdint.h` are in the same folder.
 6.  Alternatively, you can use MSYS2 `pacman` to install these from the MSYS2 AUR
     (along with the base `mingw-w64-$ARCH-[gcc|clang]` package)
 

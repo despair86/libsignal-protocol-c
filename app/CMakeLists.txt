@@ -19,13 +19,16 @@ set(LIBS ${LIBS}
 	${CMAKE_DL_LIBS}
 	signal-protocol-c
 	cdk
-	curses
 )
 
 if(WIN32)
 set(LIBS ${LIBS}
 	ws2_32
 )
+endif()
+
+if (NOT WIN32 OR USE_SEPARATE_CURSES)
+set(LIBS ${LIBS} curses)
 endif()
 
 include_directories(. ../src ../http ../crypto)
