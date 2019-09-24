@@ -22,6 +22,12 @@ set(LIBS ${LIBS}
 	curses
 )
 
+if(WIN32)
+set(LIBS ${LIBS}
+	ws2_32
+)
+endif()
+
 include_directories(. ../src ../http ../crypto)
 
 set(loki_pager_app_SRCS
