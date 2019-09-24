@@ -32,10 +32,6 @@ set(CHECK_LDFLAGS ${CHECK_LIBRARIES})
 set(CMAKE_C_STANDARD_LIBRARIES "${CMAKE_C_STANDARD_LIBRARIES} compat")
 endif()
 
-if(WIN32)
-set(CMAKE_C_STANDARD_LIBRARIES "${CMAKE_C_STANDARD_LIBRARIES} ws2_32")
-endif()
-
 set(LIBS ${LIBS}
 	${M_LIB}
 	${CHECK_LDFLAGS}
@@ -43,6 +39,12 @@ set(LIBS ${LIBS}
 	${CMAKE_DL_LIBS}
 	signal-protocol-c
 )
+
+if(WIN32)
+set(LIBS ${LIBS}
+	ws2_32
+)
+endif()
 
 set(common_SRCS
 	test_common.c
