@@ -61,15 +61,17 @@ We can use the old NextSTEP implementation of BSD curses, as long as it has some
       but you will need a POSIX-compatible `sh` and `make` at a minimum.
       - The canonical target name for this configuration is `i[3-7]86-pc-winnt3.51` or `x86_64-pc-winnt5.2` even for Windows 10.
       - You will also need an implementation of POSIX `opendir(3C)` and friends, one will be provided shortly.
-      - In the meantime, a statically linked `libcdk.dll` and `cdk.lib` [will be provided](https://snowlight.net/files/cdk_win32.tar.xz)
-        (requires nothing except `msvcrt.dll`, as `libgcc` and win32 native PDCurses are linked into the shared object.)
+      - In the meantime, a statically linked `libcdk.dll` and `cdk.lib` 
+        [will be provided](https://snowlight.net/files/cdk_win32.tar.xz) (requires nothing except `msvcrt.dll`, 
+        as `libgcc` and win32 native PDCurses are linked into the shared object.)
         - extract the arch-specific folder (32 or 64) to this folder such that `cdk.h` and `stdint.h` are in the same folder.
           This places `cdk.lib` in the `lib/` folder.
       - some environment variables:
         - `CC=cl`
         - `CXX=cl -TP`
         - `CPPFLAGS=-I[path to pdcurses root]`
-        - `LIBS=-link -LIBPATH:[path to pdcurses/wincon or pdcurses/wingui] pdcurses.lib user32.lib gdi32.lib advapi32.lib kernel32.lib`
+        - `LIBS=-link -LIBPATH:[path to pdcurses/wincon or pdcurses/wingui] pdcurses.lib user32.lib gdi32.lib 
+          advapi32.lib comdlg32.lib kernel32.lib`
       - You may yet need GNU Binutils if for some reason, the build system cannot use 
         `LIB(1)` or `DUMPBIN(1)` (for `ar(1)` and `nm(1)`)
 
@@ -90,6 +92,8 @@ We can use the old NextSTEP implementation of BSD curses, as long as it has some
     - This installs the library and headers to ./lib and ./include respectively.
     - It is technically possible to use the pre-built `libcdk.dll` above directly, if desired.
       - extract the arch-specific folder (32 or 64) to this folder such that `cdk.h` and `stdint.h` are in the same folder.
+      - you may need to delete `lib/cdk.lib` if the link-editor complains of unresolved externals with a leading underscore vs
+        external references that _lack_ the leading underscore.
 6.  Alternatively, you can use MSYS2 `pacman` to install these from the MSYS2 AUR
     (along with the base `mingw-w64-$ARCH-[gcc|clang]` package)
 
