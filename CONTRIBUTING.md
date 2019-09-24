@@ -84,7 +84,7 @@ We can use the old NextSTEP implementation of BSD curses, as long as it has some
     - For PDCurses, you may have to copy/symlink `pdcurses/win[con|gui]/libpdcursesstatic.a` to 
       `lib/libcurses.a`. Ncurses automatically installs its headers and libraries in the expected locations.
     - If using the GNU build system, set the installation prefix to this folder, then rename the resulting library to `libcurses.a`.
-5.  Compile and load the Curses Development Kit (CDK) - https://invisible-island.net/cdk/, set the prefix to this folder.
+5.  Compile and load the [Curses Development Kit (CDK)](https://github.com/despair86/cdk-win32). set the prefix to this folder.
     - This installs the library and headers to ./lib and ./include respectively.
     - It is technically possible to use the pre-built `libcdk.dll` above directly, if desired.
 6.  Alternatively, you can use MSYS2 `pacman` to install these from the MSYS2 AUR
