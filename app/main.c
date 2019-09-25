@@ -51,14 +51,13 @@ char *loki_logo[15] = {
 
 static CDKSCREEN *cdkscreen;
 
-static void splash(WINDOW *w)
+static void splash()
 {
     CDKLABEL *title, *loki_label, *ua_label;
     char *text[1], *ua_text[2];
     
     /* Box our window. */
-    box(w, ACS_VLINE, ACS_HLINE);
-    wrefresh(w);
+    box(stdscr, ACS_VLINE, ACS_HLINE);
     text[0] = "Welcome to Loki Messenger";
     title = newCDKLabel(cdkscreen, CENTER, 0,
                         (CDK_CSTRING2) text, 1,
@@ -84,27 +83,20 @@ static void splash(WINDOW *w)
 main(argc, argv)
 char** argv;
 {
-    WINDOW *subWindow;
     CDK_PARAMS params;
 
     CDKparseParams(argc, argv, &params, "s:" CDK_CLI_PARAMS);
     
     /* Start curses. */
-    (void) initCDKScreen(NULL);
+    cdkscreen = initCDKScreen(NULL);
     initCDKColor();
     curs_set(0);
 
     init_pair(1, COLOR_GREEN, COLOR_BLACK);
-    /* Create a basic window. */
-    subWindow = newwin(LINES - 5, COLS - 5, 2, 2);
 
-    /* Start Cdk. */
-    cdkscreen = initCDKScreen(subWindow);
-    
     /* Display the first window, and start the web client */
-    splash(subWindow);
+    splash();
 
-    eraseCursesWindow(subWindow);
     destroyCDKScreen(cdkscreen);
     endCDK();
     return 0;
