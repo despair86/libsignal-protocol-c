@@ -80,10 +80,10 @@ static void splash()
     {
         snprintf(ua_text[0], 512, "HTTP Client User-Agent: %s", client_ua);
         ua_label = newCDKLabel(cdkscreen, CENTER, BOTTOM, (CDK_CSTRING2)ua_text, 1, FALSE, FALSE);
-        moveCDKLabel(ua_label, 0, -2, TRUE, FALSE);
+        moveCDKLabel(ua_label, 0, -1, TRUE, FALSE);
         
         message_label = newCDKLabel(cdkscreen, CENTER, BOTTOM, (CDK_CSTRING2)message, 1, TRUE, FALSE);
-        moveCDKLabel(message_label, 0, -4, TRUE, FALSE);
+        moveCDKLabel(message_label, 0, -2, TRUE, FALSE);
         
         copy_label = newCDKLabel(cdkscreen, CENTER, TOP, (CDK_CSTRING2)copy, 1, FALSE, FALSE);
         moveCDKLabel(copy_label, 0, 2, TRUE, FALSE);
