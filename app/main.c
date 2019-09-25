@@ -99,11 +99,12 @@ static void splash()
     destroyCDKLabel(copy_label);
 }
 
-static bool export_warning()
+#ifndef _EXPORT_BUILD
+static void export_warning()
 {
     CDKLABEL *warn_header, *msg;
-    
-    char *warning[] = { "</B/03>E X P O R T  W A R N I N G<!03>" };
+
+    char *warning[] = {"</B/03>E X P O R T  W A R N I N G<!03>"};
     char *warn_msg[] = {
         "This distribution includes cryptographic software. The country in which you",
         "currently reside may have restrictions on the import, possession, use,",
@@ -122,14 +123,28 @@ static bool export_warning()
         "Export Administration Regulations, Section 740.13) for both object code and",
         "source code."
     };
-    setCDKLabel(title, (CDK_CSTRING2) window_text, 1, FALSE);
-    drawCDKLabel(title, FALSE);
-    refreshCDKScreen(cdkscreen);
     warn_header = newCDKLabel(cdkscreen, CENTER, TOP, (CDK_CSTRING2) warning, 1, TRUE, FALSE);
     moveCDKLabel(warn_header, 0, 1, TRUE, FALSE);
     msg = newCDKLabel(cdkscreen, CENTER, CENTER, (CDK_CSTRING2) warn_msg, 16, FALSE, FALSE);
+    moveCDKLabel(title, CENTER, 0, FALSE, FALSE);
     refreshCDKScreen(cdkscreen);
     waitCDKLabel(msg, 0);
+    destroyCDKLabel(warn_header);
+    destroyCDKLabel(msg);
+}
+#endif
+
+enum RESULT
+{
+    CREATE_NEW_SEED,
+    RESTORE_EXISTING_SEED
+};
+
+static int create_or_restore_seed()
+{
+    moveCDKLabel(title, CENTER, 0, FALSE, FALSE);
+    refreshCDKScreen(cdkscreen);
+    waitCDKLabel(title, 0);
 }
 
 main(argc, argv)
@@ -163,7 +178,11 @@ char** argv;
 
     /* Display the first window */
     splash();
+    refreshCDKScreen(cdkscreen);
+#ifndef _EXPORT_BUILD
     export_warning();
+#endif
+    create_or_restore_seed();
 
     if (!http_start)
         status = -1;
