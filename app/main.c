@@ -54,14 +54,16 @@ char *loki_logo[15] = {
 
 static CDKSCREEN *cdkscreen;
 static bool http_start = false;
+static char *window_text[1];
 
+/* For now, each screen in the user flow is coded as a separate closed
+ * function. If anyone has any better ideas, please send in a patch!
+ * -rick
+ */
 static void splash()
 {
     CDKLABEL *title, *loki_label, *ua_label, *message_label, *copy_label;
-    char *window_text[1], *ua_text[2], *message[1], *copy[1];
-
-    /* Box our window. */
-    box(stdscr, ACS_VLINE, ACS_HLINE);
+    char *ua_text[2], *message[1], *copy[1];
     
     window_text[0] = "Welcome to Loki Pager";
     message[0] = "</02>Press any key to continue<!02>";
@@ -116,7 +118,10 @@ char** argv;
     init_pair(1, COLOR_GREEN, COLOR_BLACK);
     init_pair(2, COLOR_BLACK, COLOR_GREEN);
 
-    /* Display the first window, and start the web client */
+    /* Box our window. */
+    box(stdscr, ACS_VLINE, ACS_HLINE);
+
+    /* Display the first window */
     splash();
 
     if (!http_start)
