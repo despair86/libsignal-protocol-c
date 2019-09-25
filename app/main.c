@@ -68,7 +68,7 @@ static void splash()
     if (http_client_init())
     {
         sprintf(ua_text[0], "HTTP Client User-Agent: %s\n", client_ua);
-        ua_label = newCDKLabel(cdkscreen, CENTER, LINES - 10, (CDK_CSTRING2)ua_text, 1, FALSE, FALSE);
+        ua_label = newCDKLabel(cdkscreen, CENTER, BOTTOM, (CDK_CSTRING2)ua_text, 1, FALSE, FALSE);
         refreshCDKScreen(cdkscreen);
         waitCDKLabel (ua_label, (char)0);
     }
