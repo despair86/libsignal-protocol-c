@@ -59,27 +59,33 @@ char** argv;
     r = http_request(&req, &rsp, true);
     if (r == 200)
     {
+        printHeaders(&rsp.headers);
 #ifdef _MSC_VER
-        printf("Status: %d\nSize: %d\nResponse:\n--->%s<---\n", r, rsp.size, rsp.body);
+        printf("---\nStatus: %d\nSize: %d\nResponse:\n--->%s<---\n", r, rsp.size, rsp.body);
 #else
-        printf("Status: %d\nSize: %zu\nResponse:\n--->%s<---\n", r, rsp.size, rsp.body);
+        printf("---\nStatus: %d\nSize: %zu\nResponse:\n--->%s<---\n", r, rsp.size, rsp.body);
 #endif
         printf("Simple HTTPS GET unit test passed without error.\n");
         tests_passed[0] = true;
         free(rsp.body);
+        freeHeaders(&rsp.headers);
+        rsp.headers.next = NULL;
     }
     else
     {
 #ifdef _MSC_VER
         printf("Status: %d\nSize: %d\nResponse:\n--->%s<---\n", r, rsp.size, rsp.body);
 #else
-        printf("Status: %d\nSize: %zu\nResponse:\n--->%s<---\n", r, rsp.size, rsp.body);
+        printf("---\nStatus: %d\nSize: %zu\nResponse:\n--->%s<---\n", r, rsp.size, rsp.body);
 #endif
         if (r > 0)
         {
             printf("Unit test proceeded with errors.\n");
+            printHeaders(&rsp.headers);
             tests_passed[0] = true;
             free(rsp.body);
+            freeHeaders(&rsp.headers);
+            rsp.headers.next = NULL;
         }
         else
             printf("Unit test failed!\n");
@@ -94,27 +100,33 @@ char** argv;
     r = http_request(&req, &rsp, true);
     if (r == 200)
     {
+        printHeaders(&rsp.headers);
 #ifdef _MSC_VER
-        printf("Status: %d\nSize: %d\nResponse:\n--->%s<---\n", r, rsp.size, rsp.body);
+        printf("---\nStatus: %d\nSize: %d\nResponse:\n--->%s<---\n", r, rsp.size, rsp.body);
 #else
-        printf("Status: %d\nSize: %zu\nResponse:\n--->%s<---\n", r, rsp.size, rsp.body);
+        printf("---\nStatus: %d\nSize: %zu\nResponse:\n--->%s<---\n", r, rsp.size, rsp.body);
 #endif
         printf("Simple HTTP GET unit test passed without error.\n");
         tests_passed[1] = true;
         free(rsp.body);
+        freeHeaders(&rsp.headers);
+        rsp.headers.next = NULL;
     }
     else
     {
 #ifdef _MSC_VER
-        printf("Status: %d\nSize: %d\nResponse:\n--->%s<---\n", r, rsp.size, rsp.body);
+        printf("---\nStatus: %d\nSize: %d\nResponse:\n--->%s<---\n", r, rsp.size, rsp.body);
 #else
-        printf("Status: %d\nSize: %zu\nResponse:\n--->%s<---\n", r, rsp.size, rsp.body);
+        printf("---\nStatus: %d\nSize: %zu\nResponse:\n--->%s<---\n", r, rsp.size, rsp.body);
 #endif
         if (r > 0)
         {
             printf("Unit test proceeded with errors.\n");
+            printHeaders(&rsp.headers);
             tests_passed[1] = true;
             free(rsp.body);
+            freeHeaders(&rsp.headers);
+            rsp.headers.next = NULL;
         }
         else
             printf("Unit test failed!\n");

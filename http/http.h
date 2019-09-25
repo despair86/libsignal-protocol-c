@@ -59,14 +59,21 @@ extern "C" {
         http_content_type c_type;
         size_t size;
     };
+    
+    struct HTTPHeader
+    {
+        char *key, *value;
+        struct HTTPHeader *next;
+    };
 
     /* The basic HTTP response object. */
     struct HttpResponse {
         char* body;
         int code;
         size_t size;
-        /* TODO: container for header k-v pairs. */
-        /* Right now we just print them to the screen */
+        /* Number of response headers below */
+        size_t header_size;
+        struct HTTPHeader headers;
     };
 
     char* client_ua;
@@ -137,6 +144,12 @@ extern "C" {
     /* OUT: http response object */
     /* RETURN: HTTP status code in [ER]AX (Or whatever the machine ABI designates return values in.) */
     int http_request(struct HttpRequest *req, struct HttpResponse *rsp, bool reserved);
+    
+    /* Frees a list of headers */
+    void freeHeaders(struct HTTPHeader *head);
+    
+    /* Prints headers */
+    void printHeaders(struct HTTPHeader *head);
 
 #if defined(__cplusplus)
 }

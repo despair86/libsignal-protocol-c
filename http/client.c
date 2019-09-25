@@ -355,7 +355,7 @@ const char* data;
     {
         response->body = malloc(size + 1);
         assert(response->body);
-        memset(response->body, 0, size+1);
+        memset(response->body, 0, size + 1);
     }
     /* This covers the case where we pre-allocate a large response buffer:
      * we can just move on if we did. Otherwise, we need to enlarge the
@@ -396,17 +396,49 @@ const char* ckey, *cvalue;
      * field
      */
     char *key, *value;
+    struct HTTPHeader *first, *current, *tmp;
+    struct HttpResponse *rsp;
+    
+    rsp = (struct HttpResponse*) opaque;
+    first = &rsp->headers;
+    current = first;
+
+    while (current != NULL)
+    {
+        tmp = current;
+        current = current->next;
+    }
+
+    if (!rsp->header_size)
+        current = first;
+    else if(rsp->header_size == 1)
+    {
+        first->next = malloc(sizeof(struct HTTPHeader));
+        assert(first->next);
+        current = first->next;
+    }
+    else
+    {
+        tmp->next = malloc(sizeof (struct HTTPHeader));
+        assert(tmp->next);
+        current = tmp->next;
+    }
 
     /* print the key */
-    key = alloca(nkey + 1);
+    key = malloc(nkey + 1);
+    assert(key);
     memset(key, 0, nkey + 1);
     memmove(key, ckey, nkey);
+    current->key = key;
 
     /* print value */
-    value = alloca(nvalue + 1);
+    value = malloc(nvalue + 1);
+    assert(value);
     memset(value, 0, nvalue + 1);
     memmove(value, cvalue, nvalue);
-    printf("%s: %s\n", key, value);
+    current->value = value;
+    rsp->header_size++;
+    current->next = NULL;
 }
 
 static void response_code(opaque, code)
@@ -426,6 +458,7 @@ static const struct http_funcs callbacks = {
 /* A oneshot HTTP client. Probably even reentrant, in case of redirection. */
 /* IN: http request object, debug bit for unit testing */
 /* OUT: http response object */
+
 /* RETURN: HTTP status code in [ER]AX (Or whatever the machine ABI designates return values in.) */
 http_request(req, rsp, reserved)
 struct HttpRequest *req;
@@ -448,6 +481,10 @@ bool reserved;
     rsp->size = 0;
     rsp->body = NULL;
     rsp->code = 0;
+    rsp->header_size = 0;
+    rsp->headers.key = NULL;
+    rsp->headers.value = NULL;
+    rsp->headers.next = NULL;
 
     if (!req->headers)
         req->headers = "";
@@ -465,7 +502,7 @@ bool reserved;
         printf("Invalid URI\n");
         return -1;
     }
-    
+
     if (!strcmp("https", parsed_uri->protocol))
         useTLS = true;
     else
@@ -511,7 +548,7 @@ bool reserved;
     {
     case HTTP_ENCODED:
 #ifdef _MSC_VER
-        snprintf(buf, 1024, "Content-Type: application/x-www-form-urlencoded\r\nContent-Length: %d", req->size);        
+        snprintf(buf, 1024, "Content-Type: application/x-www-form-urlencoded\r\nContent-Length: %d", req->size);
 #else
         snprintf(buf, 1024, "Content-Type: application/x-www-form-urlencoded\r\nContent-Length: %zu", req->size);
 #endif
@@ -522,7 +559,7 @@ bool reserved;
         break;
     case HTTP_JSON_DATA:
 #ifdef _MSC_VER
-        snprintf(buf, 1024, "Content-Type: application/json\r\nContent-Length: %d", req->size);        
+        snprintf(buf, 1024, "Content-Type: application/json\r\nContent-Length: %d", req->size);
 #else
         snprintf(buf, 1024, "Content-Type: application/json\r\nContent-Length: %zu", req->size);
 #endif
@@ -624,4 +661,44 @@ void http_client_cleanup()
     if (client_ua) free(client_ua);
     ca_certs = NULL;
     client_ua = NULL;
+}
+
+void freeHeaders(head)
+struct HTTPHeader* head;
+{
+    struct HTTPHeader* tmp;
+    
+    /* Free the head first, it is the only fixed member */
+    free(head->key);
+    free(head->value);
+    
+    if (head->next)
+        head = head->next;
+
+    while (head != NULL)
+    {
+        tmp = head;
+        head = head->next;
+        free(tmp->key);
+        free(tmp->value);
+        free(tmp);
+    }
+    
+}
+
+void printHeaders(head)
+struct HTTPHeader *head;
+{
+    char *key, *value;
+    struct HTTPHeader *current;
+    size_t ctr;
+
+    ctr = 0;
+    current = NULL;
+
+    printf("Response headers:\n");
+    for (current = head; current != NULL; current = current->next)
+    {
+        printf("%s: %s\n", current->key, current->value);
+    }
 }

@@ -15,9 +15,12 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#ifndef CRYPTO_PROVIDER_MBEDTLS_H
+#define CRYPTO_PROVIDER_MBEDTLS_H
+
 #include <limits.h>
 
-#include "../src/signal_protocol.h"
+#include "signal_protocol.h"
 
 /* mbedtls crypto provider */
 int mbedtls_random_generator(uint8_t *data, size_t len, void *user_data);
@@ -42,3 +45,4 @@ int mbedtls_decrypt(signal_buffer **output,
         const uint8_t *iv, size_t iv_len,
         const uint8_t *ciphertext, size_t ciphertext_len,
         void *user_data);
+#endif

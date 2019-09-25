@@ -29,7 +29,7 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-
+extern uint64_t CURRENT_NET_DIFFICULTY;
 #include <stdint.h>
 
     /* User must manually scrub+free returned buffer */

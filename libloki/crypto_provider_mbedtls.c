@@ -19,6 +19,7 @@
 
 #include <limits.h>
 #include <stdint.h>
+#include <string.h>
 #include <stddef.h>
 
 #include <mbedtls/config.h>
@@ -26,6 +27,7 @@
 #include <mbedtls/ctr_drbg.h>
 #include <mbedtls/cipher.h>
 #include <mbedtls/md.h>
+#include "mbedtls/md_internal.h"
 #include <mbedtls/platform_util.h>
 
 #include "../src/signal_protocol.h"
@@ -35,7 +37,7 @@ static mbedtls_ctr_drbg_context drbg_ctx;
 static mbedtls_entropy_context rnd_ctx;
 static int randumb_active = 0;
 /* A so-called "device specific id" to seed the internal RNG - here it's app-specific */
-static const unsigned char* APP_SEED_RNG = "mbedtls crypto provider for Loki Messenger (lite)";
+static const unsigned char *APP_SEED_RNG = "mbedtls crypto provider for Loki Messenger (lite)";
 
 static int init_mbedtls_randumb()
 {

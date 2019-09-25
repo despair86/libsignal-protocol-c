@@ -18,16 +18,20 @@
  * loki-messenger:clearnet/libloki/proof-of-work.js for reference.
  */
 
-#include <mbedtls/base64.h>
 #include <stdint.h>
 #include <assert.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <inttypes.h>
 #include <loki.h>
+#include <mbedtls/base64.h>
+#include <mbedtls/base64.h>
 #include <mbedtls/sha512.h>
+#include <mbedtls/platform_util.h>
 
 #define NONCE_SIZE 8
+
+uint64_t CURRENT_NET_DIFFICULTY = 10;
 
 /* User must free() returned buffer when finished */
 unsigned char* bufferToBase64(void* buf, size_t size)
@@ -60,14 +64,16 @@ static uint64_t getDiffTgt(int32_t ttl, size_t payload_size)
     size_t sz;
     int32_t ttlInSecs;
 
-    x1 = (1 << 16) - 1;
-    x2 = (1 << 64) - 1;
+    x1 = (1ULL << 16) - 1;
+    x2 = UINT64_MAX - 1;
     sz = payload_size + NONCE_SIZE;
     ttlInSecs = ttl / 1000;
     x3 = (ttlInSecs * sz) / x1;
     x4 = sz + x3;
-    /* TODO: implement Loki API routes */
-    x5 = /* get network diff */ * x4;
+    /* CURRENT_NET_DIFFICULTY is a global that is updated every time 
+     * a message is sent to a DM channel. Initially 10
+     */
+    x5 = CURRENT_NET_DIFFICULTY * x4;
     return x2 / x5;
 }
 

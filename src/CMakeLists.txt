@@ -72,6 +72,7 @@ add_library(signal-protocol-c
         $<TARGET_OBJECTS:mbedtls>
         $<TARGET_OBJECTS:json>
         $<TARGET_OBJECTS:http>
+        $<TARGET_OBJECTS:loki>
 )
 
 if(BUILD_SHARED_LIBS)
