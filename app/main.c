@@ -66,7 +66,7 @@ static void splash()
     window_text[0] = "Welcome to Loki Pager";
     message[0] = "</02>Press any key to continue<!02>";
     copy[0] = "Copyright (c)2018-2019. All rights reserved.";
-    ua_text[0] = alloca(512);
+    ua_text[0] = client_ua;
     
     /* title bar */
     title = newCDKLabel(cdkscreen, CENTER, 0,
@@ -78,7 +78,6 @@ static void splash()
 
     if (http_start)
     {
-        snprintf(ua_text[0], 512, "HTTP Client User-Agent: %s", client_ua);
         ua_label = newCDKLabel(cdkscreen, CENTER, BOTTOM, (CDK_CSTRING2)ua_text, 1, FALSE, FALSE);
         moveCDKLabel(ua_label, 0, -1, TRUE, FALSE);
         
