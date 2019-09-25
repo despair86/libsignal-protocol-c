@@ -34,7 +34,7 @@ char *XCursesProgramName = "Loki Messenger";
 #include "http.h"
 #define __LABEL__ "P A G E R   v e r s i o n   v 0 . 1"
 
-char *loki_logo[15] = {
+static char *loki_logo[15] = {
     "</01>        .o0l.           <!01>",
     "</01>       ;kNMNo.          <!01>",
     "</01>     ;kNMMXd'           <!01>",
@@ -52,9 +52,12 @@ char *loki_logo[15] = {
     "</01>          .l0l.         <!01>"
 };
 
+
+
 static CDKSCREEN *cdkscreen;
 static bool http_start = false;
 static char *window_text[1];
+static CDKLABEL *title;
 
 /* For now, each screen in the user flow is coded as a separate closed
  * function. If anyone has any better ideas, please send in a patch!
@@ -62,33 +65,27 @@ static char *window_text[1];
  */
 static void splash()
 {
-    CDKLABEL *title, *loki_label, *ua_label, *message_label, *copy_label;
-    char *ua_text[2], *message[1], *copy[1];
-    
-    window_text[0] = "Welcome to Loki Pager";
-    message[0] = "</02>Press any key to continue<!02>";
+    CDKLABEL *loki_label, *ua_label, *message_label, *copy_label;
+    char *ua_text[1], *message[1], *copy[1];
+
+    message[0] = "</B/02>Press any key to continue<!02>";
     copy[0] = "Copyright (c)2018-2019. All rights reserved.";
     ua_text[0] = client_ua;
-    
-    /* title bar */
-    title = newCDKLabel(cdkscreen, CENTER, 0,
-                        (CDK_CSTRING2) window_text, 1,
-                        FALSE, FALSE);
-    
+
     /* loki_logo */
     loki_label = newCDKLabel(cdkscreen, CENTER, CENTER, (CDK_CSTRING2) loki_logo, 15, FALSE, FALSE);
 
     if (http_start)
     {
-        ua_label = newCDKLabel(cdkscreen, CENTER, BOTTOM, (CDK_CSTRING2)ua_text, 1, FALSE, FALSE);
+        ua_label = newCDKLabel(cdkscreen, CENTER, BOTTOM, (CDK_CSTRING2) ua_text, 1, FALSE, FALSE);
         moveCDKLabel(ua_label, 0, -1, TRUE, FALSE);
-        
-        message_label = newCDKLabel(cdkscreen, CENTER, BOTTOM, (CDK_CSTRING2)message, 1, TRUE, FALSE);
+
+        message_label = newCDKLabel(cdkscreen, CENTER, BOTTOM, (CDK_CSTRING2) message, 1, TRUE, FALSE);
         moveCDKLabel(message_label, 0, -2, TRUE, FALSE);
-        
-        copy_label = newCDKLabel(cdkscreen, CENTER, TOP, (CDK_CSTRING2)copy, 1, FALSE, FALSE);
+
+        copy_label = newCDKLabel(cdkscreen, CENTER, TOP, (CDK_CSTRING2) copy, 1, FALSE, FALSE);
         moveCDKLabel(copy_label, 0, 2, TRUE, FALSE);
-        
+
         refreshCDKScreen(cdkscreen);
         waitCDKLabel(message_label, 0);
     }
@@ -97,6 +94,42 @@ static void splash()
         printw("failed to start web client\n");
         refreshCDKScreen(cdkscreen);
     }
+    destroyCDKLabel(ua_label);
+    destroyCDKLabel(message_label);
+    destroyCDKLabel(copy_label);
+}
+
+static bool export_warning()
+{
+    CDKLABEL *warn_header, *msg;
+    
+    char *warning[] = { "</B/03>E X P O R T  W A R N I N G<!03>" };
+    char *warn_msg[] = {
+        "This distribution includes cryptographic software. The country in which you",
+        "currently reside may have restrictions on the import, possession, use,",
+        "and/or re-export to another country, of encryption software. BEFORE using",
+        "any encryption software, please check your country's laws, regulations and",
+        "policies concerning the import, possession, or use, and re-export of",
+        "encryption software, to see if this is permitted. See",
+        "http://www.wassenaar.org/ for more information.",
+        "",
+        "The U.S. Government Department of Commerce, Bureau of Industry and Security",
+        "(BIS), has classified this software as Export Commodity Control Number",
+        "(ECCN) 5D002.C.1, which includes information security software using or",
+        "performing cryptographic functions with asymmetric algorithms. The form and",
+        "manner of this distribution makes it eligible for export under the License",
+        "Exception ENC Technology Software Unrestricted (TSU) exception (see the BIS",
+        "Export Administration Regulations, Section 740.13) for both object code and",
+        "source code."
+    };
+    setCDKLabel(title, (CDK_CSTRING2) window_text, 1, FALSE);
+    drawCDKLabel(title, FALSE);
+    refreshCDKScreen(cdkscreen);
+    warn_header = newCDKLabel(cdkscreen, CENTER, TOP, (CDK_CSTRING2) warning, 1, TRUE, FALSE);
+    moveCDKLabel(warn_header, 0, 1, TRUE, FALSE);
+    msg = newCDKLabel(cdkscreen, CENTER, CENTER, (CDK_CSTRING2) warn_msg, 16, FALSE, FALSE);
+    refreshCDKScreen(cdkscreen);
+    waitCDKLabel(msg, 0);
 }
 
 main(argc, argv)
@@ -111,24 +144,33 @@ char** argv;
     cdkscreen = initCDKScreen(NULL);
     initCDKColor();
     curs_set(0);
-    
+    window_text[0] = "Welcome to Loki Pager";
+
+    /* title bar */
+    title = newCDKLabel(cdkscreen, CENTER, 0,
+                        (CDK_CSTRING2) window_text, 1,
+                        FALSE, FALSE);
+
     /* start http */
     http_start = http_client_init();
 
     init_pair(1, COLOR_GREEN, COLOR_BLACK);
     init_pair(2, COLOR_BLACK, COLOR_GREEN);
+    init_pair(3, COLOR_WHITE, COLOR_RED);
 
     /* Box our window. */
     box(stdscr, ACS_VLINE, ACS_HLINE);
 
     /* Display the first window */
     splash();
+    export_warning();
 
     if (!http_start)
         status = -1;
     else
         http_client_cleanup();
-    
+
+    destroyCDKLabel(title);
     destroyCDKScreen(cdkscreen);
     endCDK();
     status = 0;
