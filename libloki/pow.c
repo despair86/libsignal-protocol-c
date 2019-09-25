@@ -23,6 +23,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <inttypes.h>
+#include <string.h>
 #ifdef _MSC_VER
 #include <malloc.h>
 #endif
@@ -104,12 +105,12 @@ unsigned char* calcPoW(int64_t timestamp, int32_t ttl, const unsigned char *pubK
     do
     {
         nonce += 1;
-        memcpy(tmp, nonce, NONCE_SIZE);
+        memcpy(tmp, &nonce, NONCE_SIZE);
         memcpy(tmp + NONCE_SIZE, initial_hash, 64);
         mbedtls_sha512_ret(tmp, NONCE_SIZE + 64, hash, 0);
-        memcpy(ctr, hash, NONCE_SIZE);
+        memcpy(&ctr, hash, NONCE_SIZE);
     }
     while (ctr > diffTgt);
     mbedtls_platform_zeroize(payload, data_size + 16384);
-    return bufferToBase64(nonce, NONCE_SIZE);
+    return bufferToBase64(&nonce, NONCE_SIZE);
 }
