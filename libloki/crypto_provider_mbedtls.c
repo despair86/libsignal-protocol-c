@@ -42,6 +42,7 @@ static const unsigned char *APP_SEED_RNG = "mbedtls crypto provider for Loki Mes
 static int init_mbedtls_randumb()
 {
     int r;
+
     mbedtls_ctr_drbg_init(&drbg_ctx);
     mbedtls_entropy_init(&rnd_ctx);
     r = mbedtls_ctr_drbg_seed(&drbg_ctx, mbedtls_entropy_func, &rnd_ctx, APP_SEED_RNG, strlen(APP_SEED_RNG));
@@ -134,6 +135,7 @@ int mbedtls_hmac_sha256_final(void *hmac_context, signal_buffer **output, void *
     int result = 0;
     unsigned char md[MBEDTLS_MD_MAX_SIZE];
     unsigned int len;
+	signal_buffer *output_buffer;
     mbedtls_md_context_t *ctx = hmac_context;
     len = ctx->md_info->size;
 
@@ -142,7 +144,7 @@ int mbedtls_hmac_sha256_final(void *hmac_context, signal_buffer **output, void *
         return SG_ERR_UNKNOWN;
     }
 
-    signal_buffer *output_buffer = signal_buffer_create(md, len);
+    output_buffer = signal_buffer_create(md, len);
     if (!output_buffer)
     {
         result = SG_ERR_NOMEM;
@@ -216,6 +218,7 @@ int mbedtls_sha512_digest_final(void *digest_context, signal_buffer **output, vo
     int result = 0;
     unsigned char md[MBEDTLS_MD_MAX_SIZE];
     unsigned int len = MBEDTLS_MD_MAX_SIZE;
+	signal_buffer *output_buffer;
     mbedtls_md_context_t *ctx = digest_context;
 
     result = mbedtls_md_finish(ctx, md);
@@ -240,7 +243,7 @@ int mbedtls_sha512_digest_final(void *digest_context, signal_buffer **output, vo
         goto complete;
     }
 
-    signal_buffer *output_buffer = signal_buffer_create(md, len);
+    output_buffer = signal_buffer_create(md, len);
     if (!output_buffer)
     {
         result = SG_ERR_NOMEM;
@@ -270,6 +273,7 @@ int mbedtls_encrypt(signal_buffer **output,
     int result = 0;
     mbedtls_cipher_context_t *ctx = 0;
     uint8_t *out_buf = 0;
+	size_t out_len, final_len;
 
     const mbedtls_cipher_info_t *evp_cipher = aes_cipher_select(cipher, key_len);
     if (!evp_cipher)
@@ -327,7 +331,7 @@ int mbedtls_encrypt(signal_buffer **output,
         goto complete;
     }
 
-    size_t out_len = 0;
+    out_len = 0;
     result = mbedtls_cipher_update(ctx, plaintext, plaintext_len, out_buf, &out_len);
     if (result)
     {
@@ -336,7 +340,7 @@ int mbedtls_encrypt(signal_buffer **output,
         goto complete;
     }
 
-    size_t final_len = 0;
+    final_len = 0;
     result = mbedtls_cipher_finish(ctx, out_buf + out_len, &final_len);
     if (result)
     {
@@ -370,6 +374,7 @@ int mbedtls_decrypt(signal_buffer **output,
     int result = 0;
     mbedtls_cipher_context_t *ctx = 0;
     uint8_t *out_buf = 0;
+	size_t out_len, final_len;
 
     const mbedtls_cipher_info_t *evp_cipher = aes_cipher_select(cipher, key_len);
     if (!evp_cipher)
@@ -427,7 +432,7 @@ int mbedtls_decrypt(signal_buffer **output,
         goto complete;
     }
 
-    size_t out_len = 0;
+    out_len = 0;
     result = mbedtls_cipher_update(ctx, ciphertext, ciphertext_len, out_buf, &out_len);
     if (result)
     {
@@ -436,7 +441,7 @@ int mbedtls_decrypt(signal_buffer **output,
         goto complete;
     }
 
-    size_t final_len = 0;
+    final_len = 0;
     result = mbedtls_cipher_finish(ctx, out_buf + out_len, &final_len);
     if (result)
     {

@@ -71,7 +71,6 @@ static void splash()
         ua_label = newCDKLabel(cdkscreen, CENTER, LINES - 10, (CDK_CSTRING2)ua_text, 1, FALSE, FALSE);
         refreshCDKScreen(cdkscreen);
         waitCDKLabel (ua_label, (char)0);
-        http_client_cleanup();
     }
     else
     {

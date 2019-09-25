@@ -23,6 +23,9 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <inttypes.h>
+#ifdef _MSC_VER
+#include <malloc.h>
+#endif
 #include <loki.h>
 #include <mbedtls/base64.h>
 #include <mbedtls/base64.h>
