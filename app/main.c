@@ -50,27 +50,27 @@ char *loki_logo[15] = {
 };
 
 static CDKSCREEN *cdkscreen;
+static int http_init = 0;
 
 static void splash()
 {
     CDKLABEL *title, *loki_label, *ua_label;
     char *text[1], *ua_text[2];
-    
+
     /* Box our window. */
     box(stdscr, ACS_VLINE, ACS_HLINE);
-    text[0] = "Welcome to Loki Messenger";
+    text[0] = "Welcome to Loki Pager";
     title = newCDKLabel(cdkscreen, CENTER, 0,
                         (CDK_CSTRING2) text, 1,
                         FALSE, FALSE);
     ua_text[0] = alloca(512);
     loki_label = newCDKLabel(cdkscreen, CENTER, CENTER, (CDK_CSTRING2) loki_logo, 15, FALSE, FALSE);
-    
+
     if (http_client_init())
     {
         sprintf(ua_text[0], "HTTP Client User-Agent: %s\n", client_ua);
         ua_label = newCDKLabel(cdkscreen, CENTER, BOTTOM, (CDK_CSTRING2)ua_text, 1, FALSE, FALSE);
-        refreshCDKScreen(cdkscreen);
-        waitCDKLabel (ua_label, (char)0);
+        http_init = 1;
     }
     else
     {
@@ -82,10 +82,11 @@ static void splash()
 main(argc, argv)
 char** argv;
 {
+    int status;
     CDK_PARAMS params;
 
     CDKparseParams(argc, argv, &params, "s:" CDK_CLI_PARAMS);
-    
+
     /* Start curses. */
     cdkscreen = initCDKScreen(NULL);
     initCDKColor();
@@ -96,7 +97,14 @@ char** argv;
     /* Display the first window, and start the web client */
     splash();
 
+    if (!http_init)
+    {
+        status = -1;
+    }
+    
     destroyCDKScreen(cdkscreen);
     endCDK();
-    return 0;
+    status = 0;
+
+    return status;
 }
