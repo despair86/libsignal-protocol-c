@@ -93,7 +93,7 @@ char** argv;
 
     init_pair(1, COLOR_GREEN, COLOR_BLACK);
     /* Create a basic window. */
-    subWindow = newwin(LINES - 5, COLS - 10, 2, 5);
+    subWindow = newwin(LINES - 5, COLS - 5, 2, 2);
 
     /* Start Cdk. */
     cdkscreen = initCDKScreen(subWindow);
