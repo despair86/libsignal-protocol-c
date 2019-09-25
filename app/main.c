@@ -19,6 +19,9 @@
 #include <stdio.h>
 #ifdef _WIN32
 #include <windows.h>
+#ifdef _MSC_VER
+#include <malloc.h>
+#endif
 #endif
 
 #include <cdk.h>
