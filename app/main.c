@@ -23,6 +23,9 @@
 #include <malloc.h>
 #endif
 #endif
+#ifdef __sun
+#include <alloca.h>
+#endif
 
 #include <cdk.h>
 
@@ -50,27 +53,43 @@ char *loki_logo[15] = {
 };
 
 static CDKSCREEN *cdkscreen;
-static int http_init = 0;
+static bool http_start = false;
 
 static void splash()
 {
-    CDKLABEL *title, *loki_label, *ua_label;
-    char *text[1], *ua_text[2];
+    CDKLABEL *title, *loki_label, *ua_label, *message_label, *copy_label;
+    char *window_text[1], *ua_text[2], *message[1], *copy[1];
 
     /* Box our window. */
     box(stdscr, ACS_VLINE, ACS_HLINE);
-    text[0] = "Welcome to Loki Pager";
-    title = newCDKLabel(cdkscreen, CENTER, 0,
-                        (CDK_CSTRING2) text, 1,
-                        FALSE, FALSE);
+    
+    window_text[0] = "Welcome to Loki Pager";
+    message[0] = "</02>Press any key to continue<!02>";
+    copy[0] = "Copyright (c)2018-2019. All rights reserved.";
     ua_text[0] = alloca(512);
+    
+    /* title bar */
+    title = newCDKLabel(cdkscreen, CENTER, 0,
+                        (CDK_CSTRING2) window_text, 1,
+                        FALSE, FALSE);
+    
+    /* loki_logo */
     loki_label = newCDKLabel(cdkscreen, CENTER, CENTER, (CDK_CSTRING2) loki_logo, 15, FALSE, FALSE);
 
-    if (http_client_init())
+    if (http_start)
     {
-        sprintf(ua_text[0], "HTTP Client User-Agent: %s\n", client_ua);
+        snprintf(ua_text[0], 512, "HTTP Client User-Agent: %s", client_ua);
         ua_label = newCDKLabel(cdkscreen, CENTER, BOTTOM, (CDK_CSTRING2)ua_text, 1, FALSE, FALSE);
-        http_init = 1;
+        moveCDKLabel(ua_label, 0, -2, TRUE, FALSE);
+        
+        message_label = newCDKLabel(cdkscreen, CENTER, BOTTOM, (CDK_CSTRING2)message, 1, TRUE, FALSE);
+        moveCDKLabel(message_label, 0, -4, TRUE, FALSE);
+        
+        copy_label = newCDKLabel(cdkscreen, CENTER, TOP, (CDK_CSTRING2)copy, 1, FALSE, FALSE);
+        moveCDKLabel(copy_label, 0, 2, TRUE, FALSE);
+        
+        refreshCDKScreen(cdkscreen);
+        waitCDKLabel(message_label, 0);
     }
     else
     {
@@ -91,16 +110,20 @@ char** argv;
     cdkscreen = initCDKScreen(NULL);
     initCDKColor();
     curs_set(0);
+    
+    /* start http */
+    http_start = http_client_init();
 
     init_pair(1, COLOR_GREEN, COLOR_BLACK);
+    init_pair(2, COLOR_BLACK, COLOR_GREEN);
 
     /* Display the first window, and start the web client */
     splash();
 
-    if (!http_init)
-    {
+    if (!http_start)
         status = -1;
-    }
+    else
+        http_client_cleanup();
     
     destroyCDKScreen(cdkscreen);
     endCDK();
