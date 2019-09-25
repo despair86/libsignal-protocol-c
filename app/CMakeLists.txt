@@ -28,7 +28,7 @@ set(LIBS ${LIBS}
 endif()
 
 if (NOT WIN32 OR USE_SEPARATE_CURSES)
-set(LIBS ${LIBS} curses)
+set(LIBS ${LIBS} curses
 endif()
 
 include_directories(. ../src ../http ../crypto)
