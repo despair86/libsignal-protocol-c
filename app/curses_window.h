@@ -30,6 +30,7 @@ extern "C" {
 #endif
 
     CDKLABEL *title;
+    CDKSCREEN *cdkscreen;
 
     void set_window_title(const char*);
 

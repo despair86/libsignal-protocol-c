@@ -18,10 +18,16 @@
 #include <cdk.h>
 #include "curses_window.h"
 
+/* Changes the title bar by destroying and regenerating the
+ * title bar itself (yikes)
+ */
 void set_window_title(const char* name)
 {
     char *window_text[1];
     
     window_text[0] = name;
-    setCDKLabel(title, window_text, 1, FALSE);
+    destroyCDKObject(title);
+    title = newCDKLabel(cdkscreen, CENTER, 0,
+                        (CDK_CSTRING2) window_text, 1,
+                        FALSE, FALSE);
 }

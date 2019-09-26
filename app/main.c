@@ -57,7 +57,6 @@ static char *loki_logo[] = {
     "</01>          .l0l.         <!01>"
 };
 
-static CDKSCREEN *cdkscreen;
 static bool http_start = false;
 static signal_context *loki_signal_ctx;
 extern signal_crypto_provider mbedtls_signal_csp;
@@ -180,14 +179,14 @@ enum RESULT
 static void restore_seed()
 {
     set_window_title("<C>Restore keys from seed or file");
-    moveCDKLabel(title, CENTER, 0, FALSE, TRUE);
+    refreshCDKScreen(cdkscreen);
     waitCDKLabel(title, 0);
 }
 
 static void new_account()
 {
     set_window_title("<C>New Account Registration");
-    moveCDKLabel(title, CENTER, 0, FALSE, TRUE);
+    refreshCDKScreen(cdkscreen);
     waitCDKLabel(title, 0);
 }
 
@@ -202,8 +201,9 @@ static int create_or_restore_seed()
         "Restore from seed or file",
         "Register a new account"
     };
+
     set_window_title("<C>Loki Pager Setup");
-    moveCDKLabel(title, CENTER, 0, FALSE, TRUE);
+    refreshCDKScreen(cdkscreen);
     choices = newCDKRadio(cdkscreen, CENTER, CENTER, NONE, 5, 20, radio_title, (CDK_CSTRING2) radio_list, 2, '*' | A_REVERSE, 1, A_REVERSE, TRUE, FALSE);
     r = activateCDKRadio(choices, NULL);
     refreshCDKScreen(cdkscreen);
@@ -217,6 +217,7 @@ static int create_or_restore_seed()
         destroyCDKRadio(choices);
         return r;
     }
+	/* NOTREACHED */
 }
 
 main(argc, argv)
@@ -233,7 +234,7 @@ char** argv;
     cdkscreen = initCDKScreen(NULL);
     initCDKColor();
     curs_set(0);
-    window_text[0] = "Welcome to Loki Messenger";
+    window_text[0] = "Welcome to Loki Pager";
 
     /* title bar */
     title = newCDKLabel(cdkscreen, CENTER, 0,
