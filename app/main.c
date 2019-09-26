@@ -107,6 +107,7 @@ static void splash()
     destroyCDKLabel(ua_label);
     destroyCDKLabel(message_label);
     destroyCDKLabel(copy_label);
+    destroyCDKLabel(loki_label);
 }
 
 static void printHex(char *hex, unsigned char key[32])
