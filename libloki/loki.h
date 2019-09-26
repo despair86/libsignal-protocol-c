@@ -29,14 +29,23 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-extern uint64_t CURRENT_NET_DIFFICULTY;
 #include <stdint.h>
+    uint64_t CURRENT_NET_DIFFICULTY;
+#ifdef _WIN32
+    CRITICAL_SECTION global_mutex;
+#else
+#include <pthread.h>
+    pthread_mutex_t global_mutex;
+#endif
 
     /* User must manually scrub+free returned buffer */
     unsigned char* calcPoW(int64_t timestamp, int32_t ttl, const unsigned char *pubKey, const unsigned char *data, size_t data_size);
     /* this is probably useful elsewhere, libloki as such will contain these util routines */
     unsigned char* bufferToBase64(void* buf, size_t size);
 
+    /* lock/unlock */
+    void loki_lock(void*);
+    void loki_unlock(void*);
 
 #ifdef __cplusplus
 }

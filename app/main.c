@@ -28,13 +28,16 @@
 #endif
 
 #include <cdk.h>
-
-char *XCursesProgramName = "Loki Messenger";
-
+#include <signal_protocol.h>
+#include <crypto_provider_mbedtls.h>
+#include <loki.h>
 #include "http.h"
+
+/* Global variables and fixed app-specific data */
+char *XCursesProgramName = "Loki Messenger";
 #define __LABEL__ "P A G E R   v e r s i o n   v 0 . 1"
 
-static char *loki_logo[15] = {
+static char *loki_logo[] = {
     "</01>        .o0l.           <!01>",
     "</01>       ;kNMNo.          <!01>",
     "</01>     ;kNMMXd'           <!01>",
@@ -52,12 +55,12 @@ static char *loki_logo[15] = {
     "</01>          .l0l.         <!01>"
 };
 
-
-
 static CDKSCREEN *cdkscreen;
 static bool http_start = false;
 static char *window_text[1];
 static CDKLABEL *title;
+static signal_context *loki_signal_ctx;
+extern signal_crypto_provider mbedtls_signal_csp;
 
 /* For now, each screen in the user flow is coded as a separate closed
  * function. If anyone has any better ideas, please send in a patch!
@@ -99,7 +102,18 @@ static void splash()
     destroyCDKLabel(copy_label);
 }
 
+static void boot_signal()
+{
+#ifdef _WIN32
+    InitializeCriticalSection(&global_mutex);
+#endif
+    signal_context_create(&loki_signal_ctx, NULL);
+    signal_context_set_crypto_provider(loki_signal_ctx, &mbedtls_signal_csp);
+    signal_context_set_locking_functions(loki_signal_ctx, loki_lock, loki_unlock);
+}
+
 #ifndef _EXPORT_BUILD
+
 static void export_warning()
 {
     CDKLABEL *warn_header, *msg;
@@ -193,6 +207,9 @@ char** argv;
     destroyCDKScreen(cdkscreen);
     endCDK();
     status = 0;
+#ifdef _WIN32
+    DeleteCritcalSection(&global_mutex);
+#endif
 
     return status;
 }

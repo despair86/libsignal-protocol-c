@@ -1634,7 +1634,9 @@
  *
  * Uncomment this to allow your own alternate threading implementation.
  */
-//#define MBEDTLS_THREADING_ALT
+#ifdef _WIN32
+#define MBEDTLS_THREADING_ALT
+#endif
 
 /**
  * \def MBEDTLS_THREADING_PTHREAD
@@ -1645,7 +1647,7 @@
  *
  * Uncomment this to enable pthread mutexes.
  */
-#ifndef _MSC_VER
+#ifndef _WIN32
 #define MBEDTLS_THREADING_PTHREAD
 #endif
 
@@ -2842,9 +2844,7 @@
  *
  * Enable this layer to allow use of mutexes within mbed TLS
  */
-#ifndef _MSC_VER
 #define MBEDTLS_THREADING_C
-#endif
 
 /**
  * \def MBEDTLS_TIMING_C

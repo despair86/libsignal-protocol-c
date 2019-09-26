@@ -31,7 +31,7 @@ if (NOT WIN32 OR USE_SEPARATE_CURSES)
 set(LIBS ${LIBS} curses)
 endif()
 
-include_directories(. ../src ../http ../crypto)
+include_directories(. ../src ../http ../crypto ../libloki)
 
 set(loki_pager_app_SRCS
 main.c

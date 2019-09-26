@@ -24,6 +24,7 @@ include_directories(. ../src ../http ../crypto ../app ../json)
 set(loki_SRCS
 crypto_provider_mbedtls.c
 pow.c
+lock.c
 )
 
 add_library(loki OBJECT ${loki_SRCS})

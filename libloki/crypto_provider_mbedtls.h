@@ -45,4 +45,5 @@ int mbedtls_decrypt(signal_buffer **output,
         const uint8_t *iv, size_t iv_len,
         const uint8_t *ciphertext, size_t ciphertext_len,
         void *user_data);
+
 #endif
