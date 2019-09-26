@@ -50,7 +50,10 @@ IF(BUILD_TESTING)
 ENDIF(BUILD_TESTING)
 
 if(MSVC)
-  add_definitions(-D_CRT_SECURE_NO_DEPRECATE -Dsnprintf=_snprintf)
+  add_definitions(-D_CRT_SECURE_NO_DEPRECATE)
+  if(MSVC_VERSION LESS 1900)
+    add_definitions(-Dsnprintf=_snprintf)
+  endif()
   include_directories(include/msvc)
 endif()
 
