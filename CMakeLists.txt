@@ -104,7 +104,6 @@ add_subdirectory(crypto)
 add_subdirectory(json)
 add_subdirectory(http)
 add_subdirectory(app)
-add_subdirectory(libloki)
 
 IF(BUILD_TESTING)
 	add_subdirectory(tests)

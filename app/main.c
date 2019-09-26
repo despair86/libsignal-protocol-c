@@ -109,12 +109,11 @@ static void splash()
     destroyCDKLabel(copy_label);
 }
 
-
-static void printHex(char *hex, unsigned char *key)
+static void printHex(char *hex, unsigned char key[32])
 {
     int i;
     for (i = 0; i < 32; ++i)
-        sprintf(hex[i * 2], "%02x", key[i]);
+        sprintf(&hex[i * 2], "%02x", key[i]);
 }
 
 static bool boot_signal()
@@ -156,6 +155,7 @@ static bool boot_signal()
 }
 
 #ifndef _EXPORT_BUILD
+
 static void export_warning()
 {
     CDKLABEL *warn_header, *msg;
@@ -217,15 +217,15 @@ static int create_or_restore_seed()
         destroyCDKRadio(choices);
         return r;
     }
-	/* NOTREACHED */
+    /* NOTREACHED */
 }
 
 static void restore_seed()
 {
     CDKLABEL *error_msg;
-    char *msg[] = { "Not implemented yet, press any key to exit." };
-    
-    error_msg = newCDKLabel(cdkscreen, CENTER, CENTER, (CDK_CSTRING2)msg, 1, TRUE, FALSE);
+    char *msg[] = {"Not implemented yet, press any key to exit."};
+
+    error_msg = newCDKLabel(cdkscreen, CENTER, CENTER, (CDK_CSTRING2) msg, 1, TRUE, FALSE);
     refreshCDKScreen(cdkscreen);
     set_window_title("<C>Restore keys from seed or file");
     refreshCDKScreen(cdkscreen);
@@ -238,13 +238,13 @@ static void new_user()
     CDKLABEL *label;
     bool r;
 
-    char *msg[] = { "Started Signal Protocol phase1" };
-    char *msg2[] = { "Failed to run Signal" };
+    char *msg[] = {"Started Signal Protocol phase1"};
+    char *msg2[] = {"Failed to run Signal"};
     r = boot_signal();
-    if(r)
-        label = newCDKLabel(cdkscreen, CENTER, CENTER, (CDK_CSTRING2)msg, 1, TRUE, FALSE);
+    if (r)
+        label = newCDKLabel(cdkscreen, CENTER, CENTER, (CDK_CSTRING2) msg, 1, TRUE, FALSE);
     else
-        label = newCDKLabel(cdkscreen, CENTER, CENTER, (CDK_CSTRING2)msg2, 1, TRUE, FALSE);
+        label = newCDKLabel(cdkscreen, CENTER, CENTER, (CDK_CSTRING2) msg2, 1, TRUE, FALSE);
     set_window_title("<C>New User Registration");
     refreshCDKScreen(cdkscreen);
     waitCDKLabel(title, 0);

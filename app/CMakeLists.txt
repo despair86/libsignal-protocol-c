@@ -31,11 +31,14 @@ if (NOT WIN32 OR USE_SEPARATE_CURSES)
 set(LIBS ${LIBS} curses)
 endif()
 
-include_directories(. ../src ../http ../crypto ../libloki)
+include_directories(. ../src ../http ../crypto)
 
 set(loki_pager_app_SRCS
 main.c
 curses_window.c
+crypto_provider_mbedtls.c
+pow.c
+lock.c
 )
 
 add_executable(pager ${loki_pager_app_SRCS})
