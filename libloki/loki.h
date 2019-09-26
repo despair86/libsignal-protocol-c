@@ -32,6 +32,7 @@ extern "C" {
 #include <stdint.h>
     uint64_t CURRENT_NET_DIFFICULTY;
 #ifdef _WIN32
+#include <windows.h>
     CRITICAL_SECTION global_mutex;
 #else
 #include <pthread.h>

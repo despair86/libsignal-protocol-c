@@ -120,6 +120,31 @@ int (*mbedtls_mutex_unlock)( mbedtls_threading_mutex_t * ) = threading_mutex_unl
 #endif /* MBEDTLS_THREADING_PTHREAD */
 
 #if defined(MBEDTLS_THREADING_ALT)
+#ifdef _WIN32
+#include <windows.h>
+static void threading_mutex_win32_init( mbedtls_threading_mutex_t *mutex )
+{
+	InitializeCriticalSection(mutex);
+}
+static void threading_mutex_win32_free( mbedtls_threading_mutex_t *mutex )
+{
+	DeleteCriticalSection(mutex);
+}
+static int threading_mutex_win32_lock( mbedtls_threading_mutex_t *mutex )
+{
+	EnterCriticalSection(mutex);
+	return 0;
+}
+static int threading_mutex_win32_unlock( mbedtls_threading_mutex_t *mutex )
+{
+	LeaveCriticalSection(mutex);
+	return 0;
+}
+void (*mbedtls_mutex_init)( mbedtls_threading_mutex_t * ) = threading_mutex_win32_init;
+void (*mbedtls_mutex_free)( mbedtls_threading_mutex_t * ) = threading_mutex_win32_free;
+int (*mbedtls_mutex_lock)( mbedtls_threading_mutex_t * ) = threading_mutex_win32_lock;
+int (*mbedtls_mutex_unlock)( mbedtls_threading_mutex_t * ) = threading_mutex_win32_unlock;
+#else
 static int threading_mutex_fail( mbedtls_threading_mutex_t *mutex )
 {
     ((void) mutex );
@@ -135,7 +160,7 @@ void (*mbedtls_mutex_init)( mbedtls_threading_mutex_t * ) = threading_mutex_dumm
 void (*mbedtls_mutex_free)( mbedtls_threading_mutex_t * ) = threading_mutex_dummy;
 int (*mbedtls_mutex_lock)( mbedtls_threading_mutex_t * ) = threading_mutex_fail;
 int (*mbedtls_mutex_unlock)( mbedtls_threading_mutex_t * ) = threading_mutex_fail;
-
+#endif
 /*
  * Set functions pointers and initialize global mutexes
  */

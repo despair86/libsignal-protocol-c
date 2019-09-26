@@ -54,7 +54,13 @@ typedef struct mbedtls_threading_mutex_t
 
 #if defined(MBEDTLS_THREADING_ALT)
 /* You should define the mbedtls_threading_mutex_t type in your header */
+#ifdef _WIN32
+#define _WINSOCKAPI_
+#include <windows.h>
+typedef CRITICAL_SECTION mbedtls_threading_mutex_t;
+#else
 #include "threading_alt.h"
+#endif
 
 /**
  * \brief           Set your alternate threading implementation function

@@ -208,7 +208,7 @@ char** argv;
     endCDK();
     status = 0;
 #ifdef _WIN32
-    DeleteCritcalSection(&global_mutex);
+    DeleteCriticalSection(&global_mutex);
 #endif
 
     return status;

@@ -689,7 +689,6 @@ struct HTTPHeader* head;
 void printHeaders(head)
 struct HTTPHeader *head;
 {
-    char *key, *value;
     struct HTTPHeader *current;
     size_t ctr;
 
