@@ -117,7 +117,7 @@ static bool boot_signal()
 #ifdef _WIN32
     __time64_t timestamp;
     InitializeCriticalSection(&global_mutex);
-    __time64(&timestamp);
+    _time64(&timestamp);
 #else
     time_t timestamp;
     time(&timestamp);
