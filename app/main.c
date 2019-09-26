@@ -29,9 +29,11 @@
 
 #include <cdk.h>
 #include <signal_protocol.h>
-#include <crypto_provider_mbedtls.h>
-#include <loki.h>
+#include <key_helper.h>
+#include "crypto_provider_mbedtls.h"
+#include "loki.h"
 #include "http.h"
+#include "curses_window.h"
 
 /* Global variables and fixed app-specific data */
 char *XCursesProgramName = "Loki Messenger";
@@ -57,8 +59,6 @@ static char *loki_logo[] = {
 
 static CDKSCREEN *cdkscreen;
 static bool http_start = false;
-static char *window_text[1];
-static CDKLABEL *title;
 static signal_context *loki_signal_ctx;
 extern signal_crypto_provider mbedtls_signal_csp;
 
@@ -102,14 +102,37 @@ static void splash()
     destroyCDKLabel(copy_label);
 }
 
-static void boot_signal()
+/*
+static void printHex()
 {
+    char md5string[33];
+    for (int i = 0; i < 16; ++i)
+        sprintf(&md5string[i * 2], "%02x", (unsigned int) digest[i]);
+}
+ */
+
+static bool boot_signal()
+{
+    signal_user_ctx *new_user_ctx;
 #ifdef _WIN32
+    __time64_t timestamp;
     InitializeCriticalSection(&global_mutex);
+    __time64(&timestamp);
+#else
+    time_t timestamp;
+    time(&timestamp);
 #endif
     signal_context_create(&loki_signal_ctx, NULL);
     signal_context_set_crypto_provider(loki_signal_ctx, &mbedtls_signal_csp);
     signal_context_set_locking_functions(loki_signal_ctx, loki_lock, loki_unlock);
+    new_user_ctx = malloc(sizeof (signal_user_ctx));
+    if (!new_user_ctx)
+        return false;
+    signal_protocol_key_helper_generate_identity_key_pair(&new_user_ctx->identity_key_pair, loki_signal_ctx);
+    signal_protocol_key_helper_generate_registration_id(&new_user_ctx->registration_id, 0, loki_signal_ctx);
+    signal_protocol_key_helper_generate_pre_keys(&new_user_ctx->pre_keys_head, 1, 100, loki_signal_ctx);
+    signal_protocol_key_helper_generate_signed_pre_key(&new_user_ctx->signed_pre_key, new_user_ctx->identity_key_pair, 5, timestamp, loki_signal_ctx);
+    return true;
 }
 
 #ifndef _EXPORT_BUILD
@@ -150,15 +173,50 @@ static void export_warning()
 
 enum RESULT
 {
-    CREATE_NEW_SEED,
-    RESTORE_EXISTING_SEED
+    RESTORE_EXISTING_SEED,
+    CREATE_NEW_SEED
 };
+
+static void restore_seed()
+{
+    set_window_title("<C>Restore keys from seed or file");
+    moveCDKLabel(title, CENTER, 0, FALSE, TRUE);
+    waitCDKLabel(title, 0);
+}
+
+static void new_account()
+{
+    set_window_title("<C>New Account Registration");
+    moveCDKLabel(title, CENTER, 0, FALSE, TRUE);
+    waitCDKLabel(title, 0);
+}
 
 static int create_or_restore_seed()
 {
-    moveCDKLabel(title, CENTER, 0, FALSE, FALSE);
+    /* set window title */
+    CDKRADIO *choices;
+    enum RESULT r;
+
+    char radio_title[] = "Create your Loki Messenger Account";
+    char *radio_list[] = {
+        "Restore from seed or file",
+        "Register a new account"
+    };
+    set_window_title("<C>Loki Pager Setup");
+    moveCDKLabel(title, CENTER, 0, FALSE, TRUE);
+    choices = newCDKRadio(cdkscreen, CENTER, CENTER, NONE, 5, 20, radio_title, (CDK_CSTRING2) radio_list, 2, '*' | A_REVERSE, 1, A_REVERSE, TRUE, FALSE);
+    r = activateCDKRadio(choices, NULL);
     refreshCDKScreen(cdkscreen);
-    waitCDKLabel(title, 0);
+    if (choices->exitType == vESCAPE_HIT)
+    {
+        destroyCDKRadio(choices);
+        return -1;
+    }
+    if (choices->exitType == vNORMAL)
+    {
+        destroyCDKRadio(choices);
+        return r;
+    }
 }
 
 main(argc, argv)
@@ -166,6 +224,8 @@ char** argv;
 {
     int status;
     CDK_PARAMS params;
+    enum RESULT r;
+    char *window_text[1];
 
     CDKparseParams(argc, argv, &params, "s:" CDK_CLI_PARAMS);
 
@@ -173,7 +233,7 @@ char** argv;
     cdkscreen = initCDKScreen(NULL);
     initCDKColor();
     curs_set(0);
-    window_text[0] = "Welcome to Loki Pager";
+    window_text[0] = "Welcome to Loki Messenger";
 
     /* title bar */
     title = newCDKLabel(cdkscreen, CENTER, 0,
@@ -196,7 +256,18 @@ char** argv;
 #ifndef _EXPORT_BUILD
     export_warning();
 #endif
-    create_or_restore_seed();
+    r = create_or_restore_seed();
+    switch (r)
+    {
+    case RESTORE_EXISTING_SEED:
+        restore_seed();
+        break;
+    case CREATE_NEW_SEED:
+        new_account();
+        break;
+    default:
+        break;
+    };
 
     if (!http_start)
         status = -1;

@@ -35,6 +35,7 @@ include_directories(. ../src ../http ../crypto ../libloki)
 
 set(loki_pager_app_SRCS
 main.c
+curses_window.c
 )
 
 add_executable(pager ${loki_pager_app_SRCS})

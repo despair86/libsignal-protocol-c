@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 Rick V. All rights reserved.
+ * Copyright (C) 2019 despair
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -15,26 +15,13 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <signal_protocol.h>
-#include <loki.h>
+#include <cdk.h>
+#include "curses_window.h"
 
-#ifndef _WIN32
-extern pthread_mutex_t global_mutex = PTHREAD_MUTEX_INITIALIZER;
-#endif
-void loki_lock(void *user_data)
+void set_window_title(const char* name)
 {
-#ifndef _WIN32
-    pthread_mutex_lock(&global_mutex);
-#else
-    EnterCriticalSection(&global_mutex);
-#endif
-}
-
-void loki_unlock(void *user_data)
-{
-#ifndef _WIN32
-    pthread_mutex_unlock(&global_mutex);
-#else
-    LeaveCriticalSection(&global_mutex);
-#endif
+    char *window_text[1];
+    
+    window_text[0] = name;
+    setCDKLabel(title, window_text, 1, FALSE);
 }
