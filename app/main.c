@@ -36,7 +36,7 @@
 #include "curses_window.h"
 
 /* Global variables and fixed app-specific data */
-char *XCursesProgramName = "Loki Messenger";
+char *XCursesProgramName = "Loki Pager";
 #define __LABEL__ "P A G E R   v e r s i o n   v 0 . 1"
 
 static char *loki_logo[] = {
@@ -60,6 +60,14 @@ static char *loki_logo[] = {
 static bool http_start = false;
 static signal_context *loki_signal_ctx;
 extern signal_crypto_provider mbedtls_signal_csp;
+/* we generate a new identity each time we start, for new users */
+signal_user_ctx *new_user_ctx;
+
+enum RESULT
+{
+    RESTORE_EXISTING_SEED,
+    CREATE_NEW_SEED
+};
 
 /* For now, each screen in the user flow is coded as a separate closed
  * function. If anyone has any better ideas, please send in a patch!
@@ -101,18 +109,17 @@ static void splash()
     destroyCDKLabel(copy_label);
 }
 
-/*
-static void printHex()
+
+static void printHex(char *hex, unsigned char *key)
 {
-    char md5string[33];
-    for (int i = 0; i < 16; ++i)
-        sprintf(&md5string[i * 2], "%02x", (unsigned int) digest[i]);
+    int i;
+    for (i = 0; i < 32; ++i)
+        sprintf(hex[i * 2], "%02x", key[i]);
 }
- */
 
 static bool boot_signal()
 {
-    signal_user_ctx *new_user_ctx;
+    int r;
 #ifdef _WIN32
     __time64_t timestamp;
     InitializeCriticalSection(&global_mutex);
@@ -121,21 +128,34 @@ static bool boot_signal()
     time_t timestamp;
     time(&timestamp);
 #endif
-    signal_context_create(&loki_signal_ctx, NULL);
-    signal_context_set_crypto_provider(loki_signal_ctx, &mbedtls_signal_csp);
-    signal_context_set_locking_functions(loki_signal_ctx, loki_lock, loki_unlock);
+    r = signal_context_create(&loki_signal_ctx, NULL);
+    if (r)
+        return false;
+    r = signal_context_set_crypto_provider(loki_signal_ctx, &mbedtls_signal_csp);
+    if (r)
+        return false;
+    r = signal_context_set_locking_functions(loki_signal_ctx, loki_lock, loki_unlock);
+    if (r)
+        return false;
     new_user_ctx = malloc(sizeof (signal_user_ctx));
     if (!new_user_ctx)
         return false;
-    signal_protocol_key_helper_generate_identity_key_pair(&new_user_ctx->identity_key_pair, loki_signal_ctx);
-    signal_protocol_key_helper_generate_registration_id(&new_user_ctx->registration_id, 0, loki_signal_ctx);
-    signal_protocol_key_helper_generate_pre_keys(&new_user_ctx->pre_keys_head, 1, 100, loki_signal_ctx);
-    signal_protocol_key_helper_generate_signed_pre_key(&new_user_ctx->signed_pre_key, new_user_ctx->identity_key_pair, 5, timestamp, loki_signal_ctx);
+    r = signal_protocol_key_helper_generate_identity_key_pair(&new_user_ctx->identity_key_pair, loki_signal_ctx);
+    if (r)
+        return false;
+    r = signal_protocol_key_helper_generate_registration_id(&new_user_ctx->registration_id, 0, loki_signal_ctx);
+    if (r)
+        return false;
+    r = signal_protocol_key_helper_generate_pre_keys(&new_user_ctx->pre_keys_head, 1, 100, loki_signal_ctx);
+    if (r)
+        return false;
+    r = signal_protocol_key_helper_generate_signed_pre_key(&new_user_ctx->signed_pre_key, new_user_ctx->identity_key_pair, 5, timestamp, loki_signal_ctx);
+    if (r)
+        return false;
     return true;
 }
 
 #ifndef _EXPORT_BUILD
-
 static void export_warning()
 {
     CDKLABEL *warn_header, *msg;
@@ -170,26 +190,6 @@ static void export_warning()
 }
 #endif
 
-enum RESULT
-{
-    RESTORE_EXISTING_SEED,
-    CREATE_NEW_SEED
-};
-
-static void restore_seed()
-{
-    set_window_title("<C>Restore keys from seed or file");
-    refreshCDKScreen(cdkscreen);
-    waitCDKLabel(title, 0);
-}
-
-static void new_account()
-{
-    set_window_title("<C>New Account Registration");
-    refreshCDKScreen(cdkscreen);
-    waitCDKLabel(title, 0);
-}
-
 static int create_or_restore_seed()
 {
     /* set window title */
@@ -218,6 +218,36 @@ static int create_or_restore_seed()
         return r;
     }
 	/* NOTREACHED */
+}
+
+static void restore_seed()
+{
+    CDKLABEL *error_msg;
+    char *msg[] = { "Not implemented yet, press any key to exit." };
+    
+    error_msg = newCDKLabel(cdkscreen, CENTER, CENTER, (CDK_CSTRING2)msg, 1, TRUE, FALSE);
+    refreshCDKScreen(cdkscreen);
+    set_window_title("<C>Restore keys from seed or file");
+    refreshCDKScreen(cdkscreen);
+    waitCDKLabel(error_msg, 0);
+    destroyCDKLabel(error_msg);
+}
+
+static void new_user()
+{
+    CDKLABEL *label;
+    bool r;
+
+    char *msg[] = { "Started Signal Protocol phase1" };
+    char *msg2[] = { "Failed to run Signal" };
+    r = boot_signal();
+    if(r)
+        label = newCDKLabel(cdkscreen, CENTER, CENTER, (CDK_CSTRING2)msg, 1, TRUE, FALSE);
+    else
+        label = newCDKLabel(cdkscreen, CENTER, CENTER, (CDK_CSTRING2)msg2, 1, TRUE, FALSE);
+    set_window_title("<C>New User Registration");
+    refreshCDKScreen(cdkscreen);
+    waitCDKLabel(title, 0);
 }
 
 main(argc, argv)
@@ -264,7 +294,7 @@ char** argv;
         restore_seed();
         break;
     case CREATE_NEW_SEED:
-        new_account();
+        new_user();
         break;
     default:
         break;
