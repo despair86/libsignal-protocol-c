@@ -38,9 +38,9 @@ endif()
 
 CHECK_SYMBOL_EXISTS(memset_s "string.h" HAVE_MEMSET_S)
 
-IF(CMAKE_SYSTEM_NAME MATCHES "Windows")
+IF(WIN32)
   CHECK_SYMBOL_EXISTS(SecureZeroMemory "windows.h;winbase.h" HAVE_SECUREZEROMEMORY)
-ENDIF(CMAKE_SYSTEM_NAME MATCHES "Windows")
+ENDIF()
 
 IF(BUILD_TESTING)
   IF (MSVC)
@@ -64,7 +64,7 @@ include_directories(include/cdk)
 link_directories(lib)
 
 IF(CMAKE_COMPILER_IS_GNUCC OR CMAKE_C_COMPILER_ID MATCHES "Clang")
-	SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fmessage-length=0 -Wall -Wmissing-field-initializers -Wno-missing-braces -Wparentheses -Wno-implicit-int")
+	SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fmessage-length=0 -Wall -Wmissing-field-initializers -Wno-missing-braces -Wparentheses -Wno-pointer-sign -Wno-implicit-int")
 ENDIF(CMAKE_COMPILER_IS_GNUCC OR CMAKE_C_COMPILER_ID MATCHES "Clang")
 
 IF(CMAKE_COMPILER_IS_GNUCC)
