@@ -273,8 +273,7 @@ signal_context * context;
 	ec_public_key* public_key;
 	ec_key_pair* key_pair;
 
-	int result = 0;
-	result = curve_generate_key_pair(context, &key_pair);
+	curve_generate_key_pair(context, &key_pair);
 
 	public_key = ec_key_pair_get_public(key_pair);
 	SIGNAL_REF(public_key);
@@ -288,8 +287,7 @@ signal_context* context;
 	ec_key_pair* key_pair;
 	ec_private_key* private_key;
 
-	int result = 0;
-	result = curve_generate_key_pair(context, &key_pair);
+	curve_generate_key_pair(context, &key_pair);
 
 	private_key = ec_key_pair_get_private(key_pair);
 	SIGNAL_REF(private_key);
@@ -328,10 +326,8 @@ void setup_loki_store_context(context, global_context)
 signal_protocol_store_context** context;
 signal_context* global_context;
 {
-	int result = 0;
-
 	signal_protocol_store_context* store_context = 0;
-	result = signal_protocol_store_context_create(&store_context, global_context);
+	signal_protocol_store_context_create(&store_context, global_context);
 
 	setup_loki_session_store(store_context);
 	setup_loki_pre_key_store(store_context);
