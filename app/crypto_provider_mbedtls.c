@@ -45,7 +45,7 @@ static int init_mbedtls_randumb()
 
 	mbedtls_ctr_drbg_init(&drbg_ctx);
 	mbedtls_entropy_init(&rnd_ctx);
-	r = mbedtls_ctr_drbg_seed(&drbg_ctx, mbedtls_entropy_func, &rnd_ctx, APP_SEED_RNG, strlen(APP_SEED_RNG));
+	r = mbedtls_ctr_drbg_seed(&drbg_ctx, mbedtls_entropy_func, &rnd_ctx, APP_SEED_RNG, strlen((char*)APP_SEED_RNG));
 	if (r)
 	{
 		printf("failed to seed RNG!\n");
