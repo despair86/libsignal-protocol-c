@@ -20,32 +20,32 @@
 #include <string.h>
 #include "cjson.h"
 
-/* TODO: add test vectors for object types expected by the pager */
+ /* TODO: add test vectors for object types expected by the pager */
 const char* test_json = "{\"name\": \"despair\"}";
 
 struct test
 {
-    char* name;
+	char* name;
 };
 
 main(argc, argv)
-char **argv;
+char** argv;
 {
-    struct test t;
-    char* pretty_json;
-    cJSON* obj;
+	struct test t;
+	char* pretty_json;
+	cJSON* obj;
 
-    puts("JSON parser unit test");
-    printf("JSON test vector: %s\n", test_json);
-    obj = cJSON_Parse(test_json);
-    if (!obj)
-        return -1;
-    pretty_json = cJSON_Print(obj);
-    printf("%s\n", pretty_json);
-    t.name = strdup(cJSON_GetObjectItemCaseSensitive(obj, "name")->valuestring);
-    cJSON_Delete(obj);
-    printf("name: %s\n", t.name);
-    free(t.name);
-    free(pretty_json);
-    return 0;
+	puts("JSON parser unit test");
+	printf("JSON test vector: %s\n", test_json);
+	obj = cJSON_Parse(test_json);
+	if (!obj)
+		return -1;
+	pretty_json = cJSON_Print(obj);
+	printf("%s\n", pretty_json);
+	t.name = strdup(cJSON_GetObjectItemCaseSensitive(obj, "name")->valuestring);
+	cJSON_Delete(obj);
+	printf("name: %s\n", t.name);
+	free(t.name);
+	free(pretty_json);
+	return 0;
 }

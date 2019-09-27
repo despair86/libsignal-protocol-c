@@ -15,13 +15,13 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/* 
- * File:   loki.h
- * Author: despair
- * API for Loki blockchain integration
- *
- * Created on September 16, 2019, 7:58 PM
- */
+ /*
+  * File:   loki.h
+  * Author: despair
+  * API for Loki blockchain integration
+  *
+  * Created on September 16, 2019, 7:58 PM
+  */
 
 #ifndef LOKI_H
 #define LOKI_H
@@ -30,26 +30,26 @@
 extern "C" {
 #endif
 #include <stdint.h>
-    uint64_t CURRENT_NET_DIFFICULTY;
+	uint64_t CURRENT_NET_DIFFICULTY;
 #ifdef _WIN32
 #include <windows.h>
-    CRITICAL_SECTION global_mutex;
+	CRITICAL_SECTION global_mutex;
 #else
 #include <pthread.h>
-    pthread_mutex_t global_mutex;
+	pthread_mutex_t global_mutex;
 #endif
 
-    /* User must manually scrub+free returned buffer */
-    unsigned char* calcPoW(int64_t timestamp, int32_t ttl, const unsigned char *pubKey, const unsigned char *data, size_t data_size);
-    /* this is probably useful elsewhere, libloki as such will contain these util routines */
-    unsigned char* bufferToBase64(void* buf, size_t size);
+	/* User must manually scrub+free returned buffer */
+	unsigned char* calcPoW(int64_t timestamp, int32_t ttl, const unsigned char* pubKey, const unsigned char* data, size_t data_size);
+	/* this is probably useful elsewhere, libloki as such will contain these util routines */
+	unsigned char* bufferToBase64(void* buf, size_t size);
 
-    /* lock/unlock */
-    void loki_lock(void*);
-    void loki_unlock(void*);
-    
-    /* render key as hex */
-    void printHex(char *hex, unsigned char *key);
+	/* lock/unlock */
+	void loki_lock(void*);
+	void loki_unlock(void*);
+
+	/* render key as hex */
+	void printHex(char* hex, unsigned char* key);
 
 #ifdef __cplusplus
 }

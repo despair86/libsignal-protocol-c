@@ -39,117 +39,117 @@ extern "C" {
 #endif
 #include <stddef.h>
 
-    typedef enum {
-        GET,
-        POST
-    } http_verb;
+	typedef enum {
+		GET,
+		POST
+	} http_verb;
 
-    typedef enum {
-        HTTP_NONE,
-        HTTP_ENCODED,
-        HTTP_FORM_DATA,
-        HTTP_JSON_DATA
-    } http_content_type;
-    
-    /* An HTTP request. */
-    struct HttpRequest {
-        char *uri, *headers;
-        unsigned char *rq_data;
-        http_verb verb;
-        http_content_type c_type;
-        size_t size;
-    };
-    
-    struct HTTPHeader
-    {
-        char *key, *value;
-        struct HTTPHeader *next;
-    };
+	typedef enum {
+		HTTP_NONE,
+		HTTP_ENCODED,
+		HTTP_FORM_DATA,
+		HTTP_JSON_DATA
+	} http_content_type;
 
-    /* The basic HTTP response object. */
-    struct HttpResponse {
-        char* body;
-        int code;
-        size_t size;
-        /* Number of response headers below */
-        size_t header_size;
-        struct HTTPHeader headers;
-    };
+	/* An HTTP request. */
+	struct HttpRequest {
+		char* uri, * headers;
+		unsigned char* rq_data;
+		http_verb verb;
+		http_content_type c_type;
+		size_t size;
+	};
 
-    char* client_ua;
+	struct HTTPHeader
+	{
+		char* key, * value;
+		struct HTTPHeader* next;
+	};
 
-    /**
-     * Callbacks for handling response data.
-     *  realloc_scratch - reallocate memory, cannot fail. There will only
-     *                    be one scratch buffer. Implemnentation may take
-     *                    advantage of this fact.
-     *  body - handle HTTP response body data
-     *  header - handle an HTTP header key/value pair
-     *  code - handle the HTTP status code for the response
-     */
-    struct http_funcs {
-        void* (*realloc_scratch)(void* opaque, void* ptr, int size);
-        void (*body)(void* opaque, const char* data, int size);
-        void (*header)(void* opaque, const char* key, int nkey, const char* value, int nvalue);
-        void (*code)(void* opqaue, int code);
-    };
+	/* The basic HTTP response object. */
+	struct HttpResponse {
+		char* body;
+		int code;
+		size_t size;
+		/* Number of response headers below */
+		size_t header_size;
+		struct HTTPHeader headers;
+	};
 
-    struct http_roundtripper {
-        struct http_funcs funcs;
-        void *opaque;
-        char *scratch;
-        int code;
-        int parsestate;
-        int contentlength;
-        int state;
-        int nscratch;
-        int nkey;
-        int nvalue;
-        int chunked;
-    };
+	char* client_ua;
 
-    /**
-     * Initializes a roundtripper with the specified response functions. This must
-     * be called before the rt object is used.
-     */
-    void http_init(struct http_roundtripper* rt, struct http_funcs, void* opaque);
+	/**
+	 * Callbacks for handling response data.
+	 *  realloc_scratch - reallocate memory, cannot fail. There will only
+	 *                    be one scratch buffer. Implemnentation may take
+	 *                    advantage of this fact.
+	 *  body - handle HTTP response body data
+	 *  header - handle an HTTP header key/value pair
+	 *  code - handle the HTTP status code for the response
+	 */
+	struct http_funcs {
+		void* (*realloc_scratch)(void* opaque, void* ptr, int size);
+		void (*body)(void* opaque, const char* data, int size);
+		void (*header)(void* opaque, const char* key, int nkey, const char* value, int nvalue);
+		void (*code)(void* opqaue, int code);
+	};
 
-    /**
-     * Frees any scratch memory allocated during parsing.
-     */
-    void http_free(struct http_roundtripper* rt);
+	struct http_roundtripper {
+		struct http_funcs funcs;
+		void* opaque;
+		char* scratch;
+		int code;
+		int parsestate;
+		int contentlength;
+		int state;
+		int nscratch;
+		int nkey;
+		int nvalue;
+		int chunked;
+	};
 
-    /**
-     * Parses a block of HTTP response data. Returns zero if the parser reached the
-     * end of the response, or an error was encountered. Use http_iserror to check
-     * for the presence of an error. Returns non-zero if more data is required for
-     * the response.
-     */
-    int http_data(struct http_roundtripper* rt, const char* data, int size, int* read);
+	/**
+	 * Initializes a roundtripper with the specified response functions. This must
+	 * be called before the rt object is used.
+	 */
+	void http_init(struct http_roundtripper* rt, struct http_funcs, void* opaque);
 
-    /**
-     * Returns non-zero if a completed parser encountered an error. If http_data did
-     * not return non-zero, the results of this function are undefined.
-     */
-    int http_iserror(struct http_roundtripper* rt);
+	/**
+	 * Frees any scratch memory allocated during parsing.
+	 */
+	void http_free(struct http_roundtripper* rt);
 
-    /* Brings HTTP client to a working state. If this returns FALSE, you are on your own. */
-    bool http_client_init();
+	/**
+	 * Parses a block of HTTP response data. Returns zero if the parser reached the
+	 * end of the response, or an error was encountered. Use http_iserror to check
+	 * for the presence of an error. Returns non-zero if more data is required for
+	 * the response.
+	 */
+	int http_data(struct http_roundtripper* rt, const char* data, int size, int* read);
 
-    /* Cleans up any persistent data used by the web client. */
-    void http_client_cleanup();
+	/**
+	 * Returns non-zero if a completed parser encountered an error. If http_data did
+	 * not return non-zero, the results of this function are undefined.
+	 */
+	int http_iserror(struct http_roundtripper* rt);
 
-    /* A oneshot HTTP client. Probably even reentrant, in case of redirection. */
-    /* IN: http request object, FALSE */
-    /* OUT: http response object */
-    /* RETURN: HTTP status code in [ER]AX (Or whatever the machine ABI designates return values in.) */
-    int http_request(struct HttpRequest *req, struct HttpResponse *rsp, bool reserved);
-    
-    /* Frees a list of headers */
-    void freeHeaders(struct HTTPHeader *head);
-    
-    /* Prints headers */
-    void printHeaders(struct HTTPHeader *head);
+	/* Brings HTTP client to a working state. If this returns FALSE, you are on your own. */
+	bool http_client_init();
+
+	/* Cleans up any persistent data used by the web client. */
+	void http_client_cleanup();
+
+	/* A oneshot HTTP client. Probably even reentrant, in case of redirection. */
+	/* IN: http request object, FALSE */
+	/* OUT: http response object */
+	/* RETURN: HTTP status code in [ER]AX (Or whatever the machine ABI designates return values in.) */
+	int http_request(struct HttpRequest* req, struct HttpResponse* rsp, bool reserved);
+
+	/* Frees a list of headers */
+	void freeHeaders(struct HTTPHeader* head);
+
+	/* Prints headers */
+	void printHeaders(struct HTTPHeader* head);
 
 #if defined(__cplusplus)
 }

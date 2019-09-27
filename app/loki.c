@@ -28,7 +28,7 @@
 #include <malloc.h>
 #endif
 #include <signal_protocol.h>
-#include <loki.h>
+#include "loki.h"
 #include <mbedtls/base64.h>
 #include <mbedtls/base64.h>
 #include <mbedtls/sha512.h>
