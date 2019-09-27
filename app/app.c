@@ -43,7 +43,7 @@ static char* loki_logo[] = {
 /* Changes the title bar by destroying and regenerating the
  * title bar itself (yikes)
  */
-void set_window_title(const char* name)
+void set_window_title(char* name)
 {
 	char* window_text[1];
 

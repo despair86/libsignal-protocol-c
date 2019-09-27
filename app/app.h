@@ -55,7 +55,7 @@ extern "C" {
 	CDKLABEL* title;
 	CDKSCREEN* cdkscreen;
 
-	void set_window_title(const char*);
+	void set_window_title(char*);
 
 	/* We can serialise this to file if we wanted to export */
 	typedef struct {
