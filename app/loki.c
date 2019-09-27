@@ -115,11 +115,11 @@ size_t data_size;
 #endif
 	/* scrub everything before we start, some platforms flip out on writes to uninitialised buffers */
 	mbedtls_platform_zeroize(payload, data_size + 16384);
-	snprintf(payload, data_size + 16384, "%" PRIi64 "%d%s%s", timestamp, ttl, pubKey, data);
-	diffTgt = getDiffTgt(ttl, strlen(payload));
+	snprintf((char*)payload, data_size + 16384, "%" PRIi64 "%d%s%s", timestamp, ttl, pubKey, data);
+	diffTgt = getDiffTgt(ttl, strlen((char*)payload));
 	ctr = UINT64_MAX;
 	nonce = 0;
-	mbedtls_sha512_ret(payload, strlen(payload), initial_hash, 0);
+	mbedtls_sha512_ret(payload, strlen((char*)payload), initial_hash, 0);
 	do
 	{
 		nonce += 1;
