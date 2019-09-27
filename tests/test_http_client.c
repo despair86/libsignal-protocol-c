@@ -28,8 +28,8 @@
 #endif
 #include "http.h"
 
-const char* test_uri = "https://motherfuckingwebsite.com/";
-const char* test_uri_insecure = "http://www.gnu.org";
+char* test_uri = "https://motherfuckingwebsite.com/";
+char* test_uri_insecure = "http://www.gnu.org";
 
 main(argc, argv)
 char** argv;
