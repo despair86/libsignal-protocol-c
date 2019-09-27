@@ -48,11 +48,9 @@ extern "C" {
 
 	/* Test utility functions */
 	unsigned char* bufferToBase64(void* buf, size_t size);
-	void printHex(char* hex, unsigned char* key);
-	void print_public_key(const char* prefix, ec_public_key* key);
+	void printPubHex(char* hex, unsigned char* key);
+	void printSecretHex(char* hex, unsigned char* key);
 	void print_buffer(const char* prefix, signal_buffer* buffer);
-	void shuffle_buffers(signal_buffer** array, size_t n);
-	void shuffle_ec_public_keys(ec_public_key** array, size_t n);
 	ec_public_key* create_test_ec_public_key(signal_context* context);
 	ec_private_key* create_test_ec_private_key(signal_context* context);
 
@@ -101,12 +99,6 @@ extern "C" {
 	int loki_sender_key_store_load_sender_key(signal_buffer** record, signal_buffer** user_record, const signal_protocol_sender_key_name* sender_key_name, void* user_data);
 	void loki_sender_key_store_destroy(void* user_data);
 	void setup_loki_sender_key_store(signal_protocol_store_context* context, signal_context* global_context);
-
-	/* Portability */
-#ifndef __OpenBSD__
-/* OpenBSD extension */
-	void srand_deterministic(unsigned int seed);
-#endif
 
 #ifdef __cplusplus
 }

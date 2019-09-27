@@ -84,13 +84,11 @@ static void extract_identity_keys()
 	secret = ratchet_identity_key_pair_get_private(new_user_ctx->identity_key_pair);
 	ec_public_key_serialize(&new_user_ctx->pub_key, pub);
 	ec_private_key_serialize(&new_user_ctx->secret_key, secret);
-	/* Serialised public key begins with 0x5, skip over that */
 	data = signal_buffer_data(new_user_ctx->pub_key);
-	printHex(new_user_ctx->pubHex, data + 1);
-	new_user_ctx->pubB64 = bufferToBase64(data + 1, 32);
-	/* Secret key is serialised verbatim */
+	printPubHex(new_user_ctx->pubHex, data);
+	new_user_ctx->pubB64 = bufferToBase64(data, 33);
 	data = signal_buffer_data(new_user_ctx->secret_key);
-	printHex(new_user_ctx->secretHex, data);
+	printSecretHex(new_user_ctx->secretHex, data);
 	new_user_ctx->secretB64 = bufferToBase64(data, 32);
 }
 

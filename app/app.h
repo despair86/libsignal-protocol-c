@@ -60,7 +60,7 @@ extern "C" {
 	/* We can serialise this to file if we wanted to export */
 	typedef struct {
 		ratchet_identity_key_pair* identity_key_pair;
-		char pubHex[65];
+		char pubHex[66];
 		char secretHex[65];
 		char* pubB64, * secretB64;
 		signal_buffer* pub_key, * secret_key;

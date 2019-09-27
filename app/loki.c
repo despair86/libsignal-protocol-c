@@ -132,12 +132,24 @@ size_t data_size;
 	return bufferToBase64(&nonce, NONCE_SIZE);
 }
 
-/* Hex representation of a given key of 32 bytes */
-void printHex(hex, key)
+/* Hex representation of a given key of 33 bytes */
+void printPubHex(hex, key)
 char* hex;
 unsigned char* key;
 {
 	int i;
+
+	for (i = 0; i < 33; ++i)
+		sprintf(&hex[i * 2], "%02x", key[i]);
+	hex[65] = 0;
+}
+
+void printSecretHex(hex, key)
+char* hex;
+unsigned char* key;
+{
+	int i;
+
 	for (i = 0; i < 32; ++i)
 		sprintf(&hex[i * 2], "%02x", key[i]);
 	hex[64] = 0;
@@ -191,29 +203,6 @@ size_t len;
 	return hash;
 }
 
-void print_public_key(prefix, key)
-const char* prefix;
-ec_public_key * key;
-{
-	signal_buffer* buffer;
-	uint8_t* data;
-	int len, i;
-
-	ec_public_key_serialize(&buffer, key);
-
-	fprintf(stderr, "%s ", prefix);
-	data = signal_buffer_data(buffer);
-	len = signal_buffer_len(buffer);
-	for (i = 0; i < len; i++) {
-		if (i > 0 && (i % 40) == 0) {
-			fprintf(stderr, "\n");
-		}
-		fprintf(stderr, "%02X", data[i]);
-	}
-	fprintf(stderr, "\n");
-	signal_buffer_free(buffer);
-}
-
 void print_buffer(prefix, buffer)
 const char* prefix;
 signal_buffer* buffer;
@@ -231,40 +220,6 @@ signal_buffer* buffer;
 		fprintf(stderr, "%02X", data[i]);
 	}
 	fprintf(stderr, "\n");
-}
-
-void shuffle_buffers(array, n)
-signal_buffer** array;
-size_t n;
-{
-	size_t i,j;
-	signal_buffer* t;
-
-	if (n > 1) {
-		for (i = 0; i < n - 1; i++) {
-			j = i + rand() / (RAND_MAX / (n - i) + 1);
-			t = array[j];
-			array[j] = array[i];
-			array[i] = t;
-		}
-	}
-}
-
-void shuffle_ec_public_keys(array, n)
-ec_public_key **array;
-size_t n;
-{
-	size_t i,j;
-	ec_public_key *t;
-
-	if (n > 1) {
-		for (i = 0; i < n - 1; i++) {
-			j = i + rand() / (RAND_MAX / (n - i) + 1);
-			t = array[j];
-			array[j] = array[i];
-			array[i] = t;
-		}
-	}
 }
 
 ec_public_key * create_test_ec_public_key(context)
@@ -1076,11 +1031,3 @@ signal_context* global_context;
 	memset(data, 0, sizeof(loki_sender_key_store_data));
 	signal_protocol_store_context_set_sender_key_store(context, &store);
 }
-
-#ifndef __OpenBSD__
-void srand_deterministic(seed)
-unsigned seed;
-{
-	srand(seed);
-}
-#endif
