@@ -34,8 +34,19 @@ extern "C" {
 #include <key_helper.h>
 #include <ratchet.h>
 #include "crypto_provider_mbedtls.h"
+#include <mbedtls/platform_util.h>
 #include "loki.h"
 #include "http.h"
+#include <stdio.h>
+#ifdef _WIN32
+#include <windows.h>
+#ifdef _MSC_VER
+#include <malloc.h>
+#endif
+#endif
+#ifdef __sun
+#include <alloca.h>
+#endif
 
     enum RESULT {
         RESTORE_EXISTING_SEED,
@@ -49,17 +60,25 @@ extern "C" {
     /* We can serialise this to file if we wanted to export */
     typedef struct {
         ratchet_identity_key_pair *identity_key_pair;
+        char pubHex[65];
+        char secretHex[65];
+        signal_buffer* pub_key;
+        signal_buffer* secret_key;
         uint32_t registration_id;
         signal_protocol_key_helper_pre_key_list_node *pre_keys_head;
         session_signed_pre_key *signed_pre_key;
-    } signal_user_ctx;
+    } loki_user_ctx;
 
+    /* we generate a new identity each time we start, for new users */
+    loki_user_ctx* new_user_ctx;
+
+    void splash();
 #ifndef _EXPORT_BUILD
     void export_warning();
 #endif
-    void splash();
-    void restore_seed();
     int create_or_restore_seed();
+    void restore_seed();
+    void new_user();
 
 #ifdef __cplusplus
 }

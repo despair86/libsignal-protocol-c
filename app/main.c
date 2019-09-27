@@ -16,27 +16,15 @@
  */
 
 /* Entry point for Loki Pager text-mode client for Loki communications network */
-#include <stdio.h>
-#ifdef _WIN32
-#include <windows.h>
-#ifdef _MSC_VER
-#include <malloc.h>
-#endif
-#endif
-#ifdef __sun
-#include <alloca.h>
-#endif
-
 #include "app.h"
 
 /* Global variables and fixed app-specific data */
 char *XCursesProgramName = "Loki Pager";
 
 static bool http_start = false;
+static bool signal_start = false;
 static signal_context *loki_signal_ctx;
 extern signal_crypto_provider mbedtls_signal_csp;
-/* we generate a new identity each time we start, for new users */
-signal_user_ctx *new_user_ctx;
 
 static bool boot_signal()
 {
@@ -58,7 +46,7 @@ static bool boot_signal()
     r = signal_context_set_locking_functions(loki_signal_ctx, loki_lock, loki_unlock);
     if (r)
         return false;
-    new_user_ctx = malloc(sizeof (signal_user_ctx));
+    new_user_ctx = malloc(sizeof (loki_user_ctx));
     if (!new_user_ctx)
         return false;
     r = signal_protocol_key_helper_generate_identity_key_pair(&new_user_ctx->identity_key_pair, loki_signal_ctx);
@@ -76,43 +64,31 @@ static bool boot_signal()
     return true;
 }
 
-static void new_user()
+static void extract_identity_keys()
 {
-    CDKLABEL *label;
-    bool r;
-    char *msg[3];
-    char pubHex[65];
-    char secretHex[65];
-    unsigned char *data;
-    signal_buffer *pub_key;
-    signal_buffer *secret_key;
-    ec_public_key *pub;
-    ec_private_key *secret;
+    unsigned char* data;
+    ec_public_key* pub;
+    ec_private_key* secret;
 
-    char *msg2[] = {"Failed to run Signal"};
-    r = boot_signal();
-    if (r)
-    {
-        pub = ratchet_identity_key_pair_get_public(new_user_ctx->identity_key_pair);
-        secret = ratchet_identity_key_pair_get_private(new_user_ctx->identity_key_pair);
-        ec_public_key_serialize(&pub_key, pub);
-        ec_private_key_serialize(&secret_key, secret);
-        data = signal_buffer_data(pub_key);
-        printHex(pubHex, data + 1);
-        data = signal_buffer_data(secret_key);
-        printHex(secretHex, data);
-        msg[0] = "Save these keys somewhere safe!";
-        msg[1] = alloca(512);
-        msg[2] = alloca(512);
-        snprintf(msg[1], 512, "Public Key:  %s", pubHex);
-        snprintf(msg[2], 512, "Private Key: %s", secretHex);
-        label = newCDKLabel(cdkscreen, CENTER, CENTER, (CDK_CSTRING2) msg, 3, TRUE, FALSE);
-    }
-    else
-        label = newCDKLabel(cdkscreen, CENTER, CENTER, (CDK_CSTRING2) msg2, 1, TRUE, FALSE);
-    set_window_title("<C>New User Registration");
-    refreshCDKScreen(cdkscreen);
-    waitCDKLabel(label, 0);
+    pub = ratchet_identity_key_pair_get_public(new_user_ctx->identity_key_pair);
+    secret = ratchet_identity_key_pair_get_private(new_user_ctx->identity_key_pair);
+    ec_public_key_serialize(&new_user_ctx->pub_key, pub);
+    ec_private_key_serialize(&new_user_ctx->secret_key, secret);
+    data = signal_buffer_data(new_user_ctx->pub_key);
+    printHex(new_user_ctx->pubHex, data + 1);
+    data = signal_buffer_data(new_user_ctx->secret_key);
+    printHex(new_user_ctx->secretHex, data);
+}
+
+static void scrub_keys()
+{
+    signal_buffer_bzero_free(new_user_ctx->pub_key);
+    signal_buffer_bzero_free(new_user_ctx->secret_key);
+    mbedtls_platform_zeroize(new_user_ctx->pubHex, 65);
+    mbedtls_platform_zeroize(new_user_ctx->secretHex, 65);
+    signal_protocol_key_helper_key_list_free(new_user_ctx->pre_keys_head);
+    mbedtls_platform_zeroize(new_user_ctx, sizeof(loki_user_ctx));
+    free(new_user_ctx);
 }
 
 main(argc, argv)
@@ -127,8 +103,12 @@ char** argv;
 
     /* start http */
     http_start = http_client_init();
+    signal_start = boot_signal();
     
     if (!http_start)
+        return -1;
+
+    if (!signal_start)
         return -1;
 
     /* Start curses. */
@@ -162,6 +142,7 @@ char** argv;
         restore_seed();
         break;
     case CREATE_NEW_SEED:
+        extract_identity_keys();
         new_user();
         break;
     default:
@@ -173,6 +154,7 @@ char** argv;
     destroyCDKLabel(title);
     destroyCDKScreen(cdkscreen);
     endCDK();
+    scrub_keys();
     status = 0;
 #ifdef _WIN32
     DeleteCriticalSection(&global_mutex);

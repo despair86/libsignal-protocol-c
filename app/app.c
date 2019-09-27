@@ -123,19 +123,6 @@ void export_warning()
 }
 #endif
 
-void restore_seed()
-{
-    CDKLABEL *error_msg;
-    char *msg[] = {"Not implemented yet, press any key to exit."};
-
-    error_msg = newCDKLabel(cdkscreen, CENTER, CENTER, (CDK_CSTRING2) msg, 1, TRUE, FALSE);
-    refreshCDKScreen(cdkscreen);
-    set_window_title("<C>Restore keys from seed or file");
-    refreshCDKScreen(cdkscreen);
-    waitCDKLabel(error_msg, 0);
-    destroyCDKLabel(error_msg);
-}
-
 int create_or_restore_seed()
 {
     /* set window title */
@@ -164,4 +151,34 @@ int create_or_restore_seed()
         return r;
     }
     /* NOTREACHED */
+    return -1;
+}
+
+void restore_seed()
+{
+    CDKLABEL *error_msg;
+    char *msg[] = {"Not implemented yet, press any key to exit."};
+
+    error_msg = newCDKLabel(cdkscreen, CENTER, CENTER, (CDK_CSTRING2) msg, 1, TRUE, FALSE);
+    refreshCDKScreen(cdkscreen);
+    set_window_title("<C>Restore keys from seed or file");
+    refreshCDKScreen(cdkscreen);
+    waitCDKLabel(error_msg, 0);
+    destroyCDKLabel(error_msg);
+}
+
+void new_user()
+{
+    CDKLABEL *label;
+    char *msg[3];
+
+    msg[0] = "Save these keys somewhere safe!";
+    msg[1] = alloca(512);
+    msg[2] = alloca(512);
+    snprintf(msg[1], 512, "Public Key:  %s", new_user_ctx->pubHex);
+    snprintf(msg[2], 512, "Private Key: %s", new_user_ctx->secretHex);
+    label = newCDKLabel(cdkscreen, CENTER, CENTER, (CDK_CSTRING2)msg, 3, TRUE, FALSE);
+    set_window_title("<C>New User Registration");
+    refreshCDKScreen(cdkscreen);
+    waitCDKLabel(label, 0);
 }
