@@ -24,6 +24,7 @@ char* XCursesProgramName = "Loki Pager";
 static bool http_start = false;
 static bool signal_start = false;
 static signal_context* loki_signal_ctx;
+static signal_protocol_store_context* loki_store_context;
 extern signal_crypto_provider mbedtls_signal_csp;
 
 static bool boot_signal()
@@ -46,7 +47,11 @@ static bool boot_signal()
 	r = signal_context_set_locking_functions(loki_signal_ctx, loki_lock, loki_unlock);
 	if (r)
 		return false;
+	r = signal_context_set_log_function(loki_signal_ctx, loki_log);
+	if (r)
+		return false;
 	new_user_ctx = malloc(sizeof(loki_user_ctx));
+	setup_loki_store_context(&loki_store_context, loki_signal_ctx);
 	if (!new_user_ctx)
 		return false;
 	mbedtls_platform_zeroize(new_user_ctx, sizeof(loki_user_ctx));

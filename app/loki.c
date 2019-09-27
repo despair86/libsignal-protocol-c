@@ -196,12 +196,14 @@ const char* prefix;
 ec_public_key * key;
 {
 	signal_buffer* buffer;
+	uint8_t* data;
+	int len, i;
+
 	ec_public_key_serialize(&buffer, key);
 
 	fprintf(stderr, "%s ", prefix);
-	uint8_t* data = signal_buffer_data(buffer);
-	int len = signal_buffer_len(buffer);
-	int i;
+	data = signal_buffer_data(buffer);
+	len = signal_buffer_len(buffer);
 	for (i = 0; i < len; i++) {
 		if (i > 0 && (i % 40) == 0) {
 			fprintf(stderr, "\n");
@@ -216,10 +218,12 @@ void print_buffer(prefix, buffer)
 const char* prefix;
 signal_buffer* buffer;
 {
+	uint8_t* data;
+	int len, i;
+
 	fprintf(stderr, "%s ", prefix);
-	uint8_t* data = signal_buffer_data(buffer);
-	int len = signal_buffer_len(buffer);
-	int i;
+	data = signal_buffer_data(buffer);
+	len = signal_buffer_len(buffer);
 	for (i = 0; i < len; i++) {
 		if (i > 0 && (i % 40) == 0) {
 			fprintf(stderr, "\n");
@@ -233,11 +237,13 @@ void shuffle_buffers(array, n)
 signal_buffer** array;
 size_t n;
 {
+	size_t i,j;
+	signal_buffer* t;
+
 	if (n > 1) {
-		size_t i;
 		for (i = 0; i < n - 1; i++) {
-			size_t j = i + rand() / (RAND_MAX / (n - i) + 1);
-			signal_buffer * t = array[j];
+			j = i + rand() / (RAND_MAX / (n - i) + 1);
+			t = array[j];
 			array[j] = array[i];
 			array[i] = t;
 		}
@@ -245,14 +251,16 @@ size_t n;
 }
 
 void shuffle_ec_public_keys(array, n)
-ec_public_key * *array;
+ec_public_key **array;
 size_t n;
 {
+	size_t i,j;
+	ec_public_key *t;
+
 	if (n > 1) {
-		size_t i;
 		for (i = 0; i < n - 1; i++) {
-			size_t j = i + rand() / (RAND_MAX / (n - i) + 1);
-			ec_public_key * t = array[j];
+			j = i + rand() / (RAND_MAX / (n - i) + 1);
+			t = array[j];
 			array[j] = array[i];
 			array[i] = t;
 		}
@@ -262,11 +270,13 @@ size_t n;
 ec_public_key * create_test_ec_public_key(context)
 signal_context * context;
 {
-	int result = 0;
+	ec_public_key* public_key;
 	ec_key_pair* key_pair;
+
+	int result = 0;
 	result = curve_generate_key_pair(context, &key_pair);
 
-	ec_public_key* public_key = ec_key_pair_get_public(key_pair);
+	public_key = ec_key_pair_get_public(key_pair);
 	SIGNAL_REF(public_key);
 	SIGNAL_UNREF(key_pair);
 	return public_key;
@@ -275,11 +285,13 @@ signal_context * context;
 ec_private_key* create_test_ec_private_key(context)
 signal_context* context;
 {
-	int result = 0;
 	ec_key_pair* key_pair;
+	ec_private_key* private_key;
+
+	int result = 0;
 	result = curve_generate_key_pair(context, &key_pair);
 
-	ec_private_key* private_key = ec_key_pair_get_private(key_pair);
+	private_key = ec_key_pair_get_private(key_pair);
 	SIGNAL_REF(private_key);
 	SIGNAL_UNREF(key_pair);
 	return private_key;
@@ -353,10 +365,10 @@ const signal_protocol_address* address;
 void* user_data;
 {
 	loki_session_store_data* data = user_data;
-
 	loki_session_store_session* s;
-
 	loki_session_store_session l;
+	signal_buffer* result;
+
 	memset(&l, 0, sizeof(loki_session_store_session));
 	l.key.recipient_id = jenkins_hash(address->name, address->name_len);
 	l.key.device_id = address->device_id;
@@ -365,7 +377,7 @@ void* user_data;
 	if (!s) {
 		return 0;
 	}
-	signal_buffer* result = signal_buffer_copy(s->record);
+	result = signal_buffer_copy(s->record);
 	if (!result) {
 		return SG_ERR_NOMEM;
 	}
@@ -380,15 +392,16 @@ size_t name_len;
 void* user_data;
 {
 	loki_session_store_data* data = user_data;
+	loki_session_store_session* cur_node;
+	loki_session_store_session* tmp_node;
+	int64_t recipient_hash;
 
 	signal_int_list* result = signal_int_list_alloc();
 	if (!result) {
 		return SG_ERR_NOMEM;
 	}
 
-	int64_t recipient_hash = jenkins_hash(name, name_len);
-	loki_session_store_session* cur_node;
-	loki_session_store_session* tmp_node;
+	recipient_hash = jenkins_hash(name, name_len);
 	HASH_ITER(hh, data->sessions, cur_node, tmp_node) {
 		if (cur_node->key.recipient_id == recipient_hash) {
 			signal_int_list_push_back(result, cur_node->key.device_id);
@@ -406,15 +419,15 @@ size_t record_len, user_record_len;
 void* user_data;
 {
 	loki_session_store_data* data = user_data;
-
 	loki_session_store_session* s;
-
 	loki_session_store_session l;
+	signal_buffer* record_buf;
+
 	memset(&l, 0, sizeof(loki_session_store_session));
 	l.key.recipient_id = jenkins_hash(address->name, address->name_len);
 	l.key.device_id = address->device_id;
 
-	signal_buffer* record_buf = signal_buffer_create(record, record_len);
+	record_buf = signal_buffer_create(record, record_len);
 	if (!record_buf) {
 		return SG_ERR_NOMEM;
 	}
@@ -447,8 +460,8 @@ void* user_data;
 {
 	loki_session_store_data* data = user_data;
 	loki_session_store_session* s;
-
 	loki_session_store_session l;
+
 	memset(&l, 0, sizeof(loki_session_store_session));
 	l.key.recipient_id = jenkins_hash(address->name, address->name_len);
 	l.key.device_id = address->device_id;
@@ -465,8 +478,8 @@ void* user_data;
 	int result = 0;
 	loki_session_store_data* data = user_data;
 	loki_session_store_session* s;
-
 	loki_session_store_session l;
+
 	memset(&l, 0, sizeof(loki_session_store_session));
 	l.key.recipient_id = jenkins_hash(address->name, address->name_len);
 	l.key.device_id = address->device_id;
@@ -489,10 +502,11 @@ void* user_data;
 {
 	int result = 0;
 	loki_session_store_data* data = user_data;
-
-	int64_t recipient_hash = jenkins_hash(name, name_len);
 	loki_session_store_session* cur_node;
 	loki_session_store_session* tmp_node;
+	int64_t recipient_hash;
+
+	recipient_hash = jenkins_hash(name, name_len);
 	HASH_ITER(hh, data->sessions, cur_node, tmp_node) {
 		if (cur_node->key.recipient_id == recipient_hash) {
 			HASH_DEL(data->sessions, cur_node);
@@ -509,9 +523,9 @@ void loki_session_store_destroy(user_data)
 void* user_data;
 {
 	loki_session_store_data* data = user_data;
-
 	loki_session_store_session* cur_node;
 	loki_session_store_session* tmp_node;
+
 	HASH_ITER(hh, data->sessions, cur_node, tmp_node) {
 		HASH_DEL(data->sessions, cur_node);
 		signal_buffer_free(cur_node->record);
@@ -525,7 +539,6 @@ void setup_loki_session_store(context)
 signal_protocol_store_context* context;
 {
 	loki_session_store_data* data = malloc(sizeof(loki_session_store_data));
-	memset(data, 0, sizeof(loki_session_store_data));
 
 	signal_protocol_session_store store = {
 		loki_session_store_load_session,
@@ -538,6 +551,7 @@ signal_protocol_store_context* context;
 		data
 	};
 
+	memset(data, 0, sizeof(loki_session_store_data));
 	signal_protocol_store_context_set_session_store(context, &store);
 }
 
@@ -654,7 +668,6 @@ void setup_loki_pre_key_store(context)
 signal_protocol_store_context* context;
 {
 	loki_pre_key_store_data* data = malloc(sizeof(loki_pre_key_store_data));
-	memset(data, 0, sizeof(loki_pre_key_store_data));
 
 	signal_protocol_pre_key_store store = {
 		loki_pre_key_store_load_pre_key,
@@ -665,6 +678,7 @@ signal_protocol_store_context* context;
 		data
 	};
 
+	memset(data, 0, sizeof(loki_pre_key_store_data));
 	signal_protocol_store_context_set_pre_key_store(context, &store);
 }
 
@@ -781,7 +795,6 @@ void setup_loki_signed_pre_key_store(context)
 signal_protocol_store_context* context;
 {
 	loki_signed_pre_key_store_data* data = malloc(sizeof(loki_signed_pre_key_store_data));
-	memset(data, 0, sizeof(loki_signed_pre_key_store_data));
 
 	signal_protocol_signed_pre_key_store store = {
 			loki_signed_pre_key_store_load_signed_pre_key,
@@ -792,6 +805,7 @@ signal_protocol_store_context* context;
 			data
 	};
 
+	memset(data, 0, sizeof(loki_signed_pre_key_store_data));
 	signal_protocol_store_context_set_signed_pre_key_store(context, &store);
 }
 
@@ -836,15 +850,15 @@ size_t key_len;
 void* user_data;
 {
 	loki_identity_store_data* data = user_data;
-
 	loki_identity_store_key* s;
-
 	signal_buffer* key_buf = signal_buffer_create(key_data, key_len);
+	int64_t recipient_hash;
+
 	if (!key_buf) {
 		return SG_ERR_NOMEM;
 	}
 
-	int64_t recipient_hash = jenkins_hash(address->name, address->name_len);
+	recipient_hash = jenkins_hash(address->name, address->name_len);
 
 	HASH_FIND(hh, data->keys, &recipient_hash, sizeof(int64_t), s);
 	if (s) {
@@ -919,20 +933,9 @@ signal_protocol_store_context* context;
 signal_context* global_context;
 {
 	loki_identity_store_data* data = malloc(sizeof(loki_identity_store_data));
-	memset(data, 0, sizeof(loki_identity_store_data));
-
 	ec_key_pair* identity_key_pair_keys = 0;
-	curve_generate_key_pair(global_context, &identity_key_pair_keys);
-
 	ec_public_key* identity_key_public = ec_key_pair_get_public(identity_key_pair_keys);
 	ec_private_key* identity_key_private = ec_key_pair_get_private(identity_key_pair_keys);
-
-	ec_public_key_serialize(&data->identity_key_public, identity_key_public);
-	ec_private_key_serialize(&data->identity_key_private, identity_key_private);
-	SIGNAL_UNREF(identity_key_pair_keys);
-
-	data->local_registration_id = (rand() % 16380) + 1;
-
 	signal_protocol_identity_key_store store = {
 			loki_identity_key_store_get_identity_key_pair,
 			loki_identity_key_store_get_local_registration_id,
@@ -941,6 +944,15 @@ signal_context* global_context;
 			loki_identity_key_store_destroy,
 			data
 	};
+
+	memset(data, 0, sizeof(loki_identity_store_data));
+	curve_generate_key_pair(global_context, &identity_key_pair_keys);
+
+	ec_public_key_serialize(&data->identity_key_public, identity_key_public);
+	ec_private_key_serialize(&data->identity_key_private, identity_key_private);
+	SIGNAL_UNREF(identity_key_pair_keys);
+
+	data->local_registration_id = (rand() % 16380) + 1;
 
 	signal_protocol_store_context_set_identity_key_store(context, &store);
 }
@@ -970,16 +982,16 @@ size_t record_len, user_record_len;
 void* user_data;
 {
 	loki_sender_key_store_data* data = user_data;
-
 	loki_sender_key_store_record* s;
-
 	loki_sender_key_store_record l;
+	signal_buffer* record_buf;
+
 	memset(&l, 0, sizeof(loki_sender_key_store_record));
 	l.key.group_id = jenkins_hash(sender_key_name->group_id, sender_key_name->group_id_len);
 	l.key.recipient_id = jenkins_hash(sender_key_name->sender.name, sender_key_name->sender.name_len);
 	l.key.device_id = sender_key_name->sender.device_id;
 
-	signal_buffer* record_buf = signal_buffer_create(record, record_len);
+	record_buf = signal_buffer_create(record, record_len);
 	if (!record_buf) {
 		return SG_ERR_NOMEM;
 	}
@@ -1013,10 +1025,10 @@ const signal_protocol_sender_key_name* sender_key_name;
 void* user_data;
 {
 	loki_sender_key_store_data* data = user_data;
-
 	loki_sender_key_store_record* s;
-
 	loki_sender_key_store_record l;
+	signal_buffer* result;
+
 	memset(&l, 0, sizeof(loki_sender_key_store_record));
 	l.key.group_id = jenkins_hash(sender_key_name->group_id, sender_key_name->group_id_len);
 	l.key.recipient_id = jenkins_hash(sender_key_name->sender.name, sender_key_name->sender.name_len);
@@ -1026,7 +1038,7 @@ void* user_data;
 	if (!s) {
 		return 0;
 	}
-	signal_buffer* result = signal_buffer_copy(s->record);
+	result = signal_buffer_copy(s->record);
 	if (!result) {
 		return SG_ERR_NOMEM;
 	}
@@ -1038,9 +1050,9 @@ void loki_sender_key_store_destroy(user_data)
 void* user_data;
 {
 	loki_sender_key_store_data* data = user_data;
-
 	loki_sender_key_store_record* cur_node;
 	loki_sender_key_store_record* tmp_node;
+
 	HASH_ITER(hh, data->records, cur_node, tmp_node) {
 		HASH_DEL(data->records, cur_node);
 		signal_buffer_free(cur_node->record);
@@ -1054,7 +1066,6 @@ signal_protocol_store_context* context;
 signal_context* global_context;
 {
 	loki_sender_key_store_data* data = malloc(sizeof(loki_sender_key_store_data));
-	memset(data, 0, sizeof(loki_sender_key_store_data));
 
 	signal_protocol_sender_key_store store = {
 		loki_sender_key_store_store_sender_key,
@@ -1063,6 +1074,7 @@ signal_context* global_context;
 		data
 	};
 
+	memset(data, 0, sizeof(loki_sender_key_store_data));
 	signal_protocol_store_context_set_sender_key_store(context, &store);
 }
 
