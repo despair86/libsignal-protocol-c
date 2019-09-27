@@ -40,6 +40,20 @@ static char *loki_logo[] = {
     "</01>          .l0l.         <!01>"
 };
 
+/* Changes the title bar by destroying and regenerating the
+ * title bar itself (yikes)
+ */
+void set_window_title(const char* name)
+{
+    char *window_text[1];
+    
+    window_text[0] = name;
+    destroyCDKObject(title);
+    title = newCDKLabel(cdkscreen, CENTER, 0,
+                        (CDK_CSTRING2) window_text, 1,
+                        FALSE, FALSE);
+}
+
 void splash()
 {
     CDKLABEL *loki_label, *ua_label, *message_label, *copy_label;

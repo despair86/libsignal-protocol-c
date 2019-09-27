@@ -36,12 +36,15 @@ extern "C" {
 #include "crypto_provider_mbedtls.h"
 #include "loki.h"
 #include "http.h"
-#include "curses_window.h"
 
     enum RESULT {
         RESTORE_EXISTING_SEED,
         CREATE_NEW_SEED
     };
+    CDKLABEL *title;
+    CDKSCREEN *cdkscreen;
+
+    void set_window_title(const char*);
 
     /* We can serialise this to file if we wanted to export */
     typedef struct {

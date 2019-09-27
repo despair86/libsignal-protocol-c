@@ -35,10 +35,8 @@ include_directories(. ../src ../http ../crypto)
 
 set(loki_pager_app_SRCS
 main.c
-curses_window.c
 crypto_provider_mbedtls.c
 loki.c
-lock.c
 app.c
 )
 

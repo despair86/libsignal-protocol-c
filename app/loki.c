@@ -123,3 +123,24 @@ void printHex(char *hex, unsigned char *key)
         sprintf(&hex[i * 2], "%02x", key[i]);
     hex[64] = 0;
 }
+
+#ifndef _WIN32
+extern pthread_mutex_t global_mutex = PTHREAD_MUTEX_INITIALIZER;
+#endif
+void loki_lock(void *user_data)
+{
+#ifndef _WIN32
+    pthread_mutex_lock(&global_mutex);
+#else
+    EnterCriticalSection(&global_mutex);
+#endif
+}
+
+void loki_unlock(void *user_data)
+{
+#ifndef _WIN32
+    pthread_mutex_unlock(&global_mutex);
+#else
+    LeaveCriticalSection(&global_mutex);
+#endif
+}
