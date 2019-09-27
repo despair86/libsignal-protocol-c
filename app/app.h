@@ -63,8 +63,7 @@ extern "C" {
 		char pubHex[65];
 		char secretHex[65];
 		char* pubB64, * secretB64;
-		signal_buffer* pub_key;
-		signal_buffer* secret_key;
+		signal_buffer* pub_key, * secret_key;
 		uint32_t registration_id;
 		signal_protocol_key_helper_pre_key_list_node* pre_keys_head;
 		session_signed_pre_key* signed_pre_key;

@@ -117,7 +117,7 @@ char** argv;
 
 	CDKparseParams(argc, argv, &params, "s:" CDK_CLI_PARAMS);
 
-	/* start http */
+	/* start http and base signal protocol */
 	http_start = http_client_init();
 	signal_start = boot_signal();
 
@@ -138,6 +138,9 @@ char** argv;
 		(CDK_CSTRING2)window_text, 1,
 		FALSE, FALSE);
 
+	/* some base UI colours. these will get reassigned
+	 * once we get to the chat window 
+	 */
 	init_pair(1, COLOR_GREEN, COLOR_BLACK);
 	init_pair(2, COLOR_BLACK, COLOR_GREEN);
 	init_pair(3, COLOR_WHITE, COLOR_RED);
@@ -160,6 +163,7 @@ char** argv;
 	case CREATE_NEW_SEED:
 		extract_identity_keys();
 		new_user();
+		scrub_keys();
 		break;
 	default:
 		break;
@@ -170,7 +174,7 @@ char** argv;
 	destroyCDKLabel(title);
 	destroyCDKScreen(cdkscreen);
 	endCDK();
-	scrub_keys();
+	signal_context_destroy(loki_signal_ctx);
 	status = 0;
 #ifdef _WIN32
 	DeleteCriticalSection(&global_mutex);
