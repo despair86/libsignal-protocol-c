@@ -934,8 +934,9 @@ signal_context* global_context;
 {
 	loki_identity_store_data* data = malloc(sizeof(loki_identity_store_data));
 	ec_key_pair* identity_key_pair_keys = 0;
-	ec_public_key* identity_key_public = ec_key_pair_get_public(identity_key_pair_keys);
-	ec_private_key* identity_key_private = ec_key_pair_get_private(identity_key_pair_keys);
+	ec_public_key* identity_key_public;
+	ec_private_key* identity_key_private;
+
 	signal_protocol_identity_key_store store = {
 			loki_identity_key_store_get_identity_key_pair,
 			loki_identity_key_store_get_local_registration_id,
@@ -947,6 +948,8 @@ signal_context* global_context;
 
 	memset(data, 0, sizeof(loki_identity_store_data));
 	curve_generate_key_pair(global_context, &identity_key_pair_keys);
+	identity_key_public = ec_key_pair_get_public(identity_key_pair_keys);
+	identity_key_private = ec_key_pair_get_private(identity_key_pair_keys);
 
 	ec_public_key_serialize(&data->identity_key_public, identity_key_public);
 	ec_private_key_serialize(&data->identity_key_private, identity_key_private);

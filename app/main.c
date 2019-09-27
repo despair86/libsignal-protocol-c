@@ -51,9 +51,9 @@ static bool boot_signal()
 	if (r)
 		return false;
 	new_user_ctx = malloc(sizeof(loki_user_ctx));
-	setup_loki_store_context(&loki_store_context, loki_signal_ctx);
 	if (!new_user_ctx)
 		return false;
+	setup_loki_store_context(&loki_store_context, loki_signal_ctx);
 	mbedtls_platform_zeroize(new_user_ctx, sizeof(loki_user_ctx));
 	r = signal_protocol_key_helper_generate_identity_key_pair(&new_user_ctx->identity_key_pair, loki_signal_ctx);
 	if (r)
