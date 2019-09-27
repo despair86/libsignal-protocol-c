@@ -144,7 +144,7 @@ unsigned char* key;
 }
 
 #ifndef _WIN32
-extern pthread_mutex_t global_mutex = PTHREAD_MUTEX_INITIALIZER;
+pthread_mutex_t global_mutex = PTHREAD_MUTEX_INITIALIZER;
 #endif
 void loki_lock(user_data)
 void* user_data;
