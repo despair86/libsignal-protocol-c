@@ -690,9 +690,6 @@ void printHeaders(head)
 struct HTTPHeader* head;
 {
 	struct HTTPHeader* current;
-	size_t ctr;
-
-	ctr = 0;
 	current = NULL;
 
 	printf("Response headers:\n");
