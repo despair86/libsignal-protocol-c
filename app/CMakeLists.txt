@@ -37,8 +37,9 @@ set(loki_pager_app_SRCS
 main.c
 curses_window.c
 crypto_provider_mbedtls.c
-pow.c
+loki.c
 lock.c
+app.c
 )
 
 add_executable(pager ${loki_pager_app_SRCS})

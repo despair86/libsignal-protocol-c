@@ -115,3 +115,11 @@ unsigned char* calcPoW(int64_t timestamp, int32_t ttl, const unsigned char *pubK
     mbedtls_platform_zeroize(payload, data_size + 16384);
     return bufferToBase64(&nonce, NONCE_SIZE);
 }
+
+void printHex(char *hex, unsigned char *key)
+{
+    int i;
+    for (i = 0; i < 32; ++i)
+        sprintf(&hex[i * 2], "%02x", key[i]);
+    hex[64] = 0;
+}

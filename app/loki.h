@@ -39,15 +39,6 @@ extern "C" {
     pthread_mutex_t global_mutex;
 #endif
 
-    /* We can serialise this to file if we wanted to export */
-    typedef struct 
-    {
-        ratchet_identity_key_pair *identity_key_pair;
-        uint32_t registration_id;
-        signal_protocol_key_helper_pre_key_list_node *pre_keys_head;
-        session_signed_pre_key *signed_pre_key;
-    } signal_user_ctx;
-
     /* User must manually scrub+free returned buffer */
     unsigned char* calcPoW(int64_t timestamp, int32_t ttl, const unsigned char *pubKey, const unsigned char *data, size_t data_size);
     /* this is probably useful elsewhere, libloki as such will contain these util routines */
@@ -56,6 +47,9 @@ extern "C" {
     /* lock/unlock */
     void loki_lock(void*);
     void loki_unlock(void*);
+    
+    /* render key as hex */
+    void printHex(char *hex, unsigned char *key);
 
 #ifdef __cplusplus
 }
