@@ -144,6 +144,7 @@ unsigned char* key;
 	hex[65] = 0;
 }
 
+/* Private key is a round 32 bytes */
 void printSecretHex(hex, key)
 char* hex;
 unsigned char* key;

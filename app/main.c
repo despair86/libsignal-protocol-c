@@ -31,6 +31,7 @@ static bool boot_signal()
 {
 	int r;
 #ifdef _WIN32
+	/* 64-bit time_t on windows since 1999 ffs */
 	__time64_t timestamp;
 	InitializeCriticalSection(&global_mutex);
 	_time64(&timestamp);

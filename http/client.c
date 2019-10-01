@@ -69,9 +69,9 @@ unsigned char* ca_certs = NULL;
  * the code is indeed built outside the US.
  */
 #ifdef _EXPORT_BUILD
-static char userAgent[] = "Loki_Pager/0.1 PolarSSL/2.16.2; I; ";
+static char userAgent[] = "Loki_Pager/0.1 PolarSSL/2.16.3; I; ";
 #else
-static char userAgent[] = "Loki_Pager/0.1 PolarSSL/2.16.2; U; ";
+static char userAgent[] = "Loki_Pager/0.1 PolarSSL/2.16.3; U; ";
 #endif
 
 typedef struct url_parser_url
