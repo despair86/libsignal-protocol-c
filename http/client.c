@@ -51,6 +51,7 @@ strtok_r(char* __restrict s, const char* __restrict delim, char** __restrict las
 #include <mbedtls/error.h>
 #include <mbedtls/certs.h>
 #include <mbedtls/base64.h>
+#include <mbedtls/version.h>
 
 /* PolarSSL internal state */
 mbedtls_net_context server_fd;
@@ -69,9 +70,9 @@ unsigned char* ca_certs = NULL;
  * the code is indeed built outside the US.
  */
 #ifdef _EXPORT_BUILD
-static char userAgent[] = "Loki_Pager/0.1 PolarSSL/2.16.3; I; ";
+static char userAgent[] = "Loki_Pager/0.1 PolarSSL/" MBEDTLS_VERSION_STRING "; I; ";
 #else
-static char userAgent[] = "Loki_Pager/0.1 PolarSSL/2.16.3; U; ";
+static char userAgent[] = "Loki_Pager/0.1 PolarSSL/" MBEDTLS_VERSION_STRING "; U; ";
 #endif
 
 typedef struct url_parser_url
