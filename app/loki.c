@@ -223,7 +223,7 @@ signal_buffer* buffer;
 	fprintf(stderr, "\n");
 }
 
-ec_public_key * create_test_ec_public_key(context)
+ec_public_key * derive_ec_public_key(context)
 signal_context * context;
 {
 	ec_public_key* public_key;
@@ -237,7 +237,7 @@ signal_context * context;
 	return public_key;
 }
 
-ec_private_key* create_test_ec_private_key(context)
+ec_private_key* derive_ec_private_key(context)
 signal_context* context;
 {
 	ec_key_pair* key_pair;

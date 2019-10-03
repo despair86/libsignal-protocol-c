@@ -17,7 +17,7 @@
 
 /* Entry point for Loki Pager text-mode client for Loki communications network */
 #include "app.h"
-
+#include "mnemonic.h"
 /* Global variables and fixed app-specific data */
 char* XCursesProgramName = "Loki Pager";
 
@@ -118,6 +118,7 @@ char** argv;
 	CDK_PARAMS params;
 	enum RESULT r;
 	char* window_text[1];
+	wordlist *w;
 
 	CDKparseParams(argc, argv, &params, "s:" CDK_CLI_PARAMS);
 
@@ -153,6 +154,7 @@ char** argv;
 	box(stdscr, ACS_VLINE, ACS_HLINE);
 
 	/* Display the first window */
+	w = initialise_wordlist(LANGUAGE_DEFAULT);
 	splash();
 	refreshCDKScreen(cdkscreen);
 #ifndef _EXPORT_BUILD
@@ -179,6 +181,7 @@ char** argv;
 	destroyCDKScreen(cdkscreen);
 	endCDK();
 	signal_context_destroy(loki_signal_ctx);
+	destroy_wordlist(w);
 	status = 0;
 #ifdef _WIN32
 	DeleteCriticalSection(&global_mutex);

@@ -51,8 +51,8 @@ extern "C" {
 	void printPubHex(char* hex, unsigned char* key);
 	void printSecretHex(char* hex, unsigned char* key);
 	void print_buffer(const char* prefix, signal_buffer* buffer);
-	ec_public_key* create_test_ec_public_key(signal_context* context);
-	ec_private_key* create_test_ec_private_key(signal_context* context);
+	ec_public_key* derive_ec_public_key(signal_context* context);
+	ec_private_key* derive_ec_private_key(signal_context* context);
 
 	/* Logging */
 	void loki_log(int level, const char* message, size_t len, void* user_data);
