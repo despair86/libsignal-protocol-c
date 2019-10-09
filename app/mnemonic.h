@@ -29,8 +29,9 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-#include <stddef.h>
+#include "arraylist.h"
 
+    typedef ARRAYLIST(char*) stringList;
 	typedef enum
 	{
 		LANGUAGE_DEFAULT,
@@ -54,10 +55,8 @@ extern "C" {
 	{
 		language_code lc;
 		int prefix_length;
-		size_t list_size;
-		char** words;
-		/* This will always be NULL for Electrum */
-		char** truncated_words;
+        /* truncated_words will be empty for Electrum */
+        stringList words, truncated_words;
 	} wordlist;
 
 	wordlist* initialise_wordlist(language_code);

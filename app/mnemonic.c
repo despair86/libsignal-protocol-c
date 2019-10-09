@@ -19,6 +19,7 @@
 
 /* RFC: should I just tie this to whatever LC_ALL returns? */
 #include "mnemonic.h"
+#include "arraylist.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -28,8 +29,7 @@
 static get_prefix_length(l)
 language_code l;
 {
-	switch (l)
-	{
+	switch (l) {
 	case LANGUAGE_ZH_TW:
 		return 1;
 	case LANGUAGE_EN_ELECTRUM:
@@ -51,17 +51,16 @@ language_code lc;
 {
 	cJSON* raw_word_list, *e;
 	FILE* json;
-	int list_size, i;
+	int list_size;
 	char* data;
 	wordlist* w = NULL;
 
-	w = malloc(sizeof(wordlist));
-	memset(w, 0, sizeof(wordlist));
+	w = malloc(sizeof (wordlist));
 	data = malloc(65536);
 	if (!w || !data)
 		return NULL;
-	switch (lc)
-	{
+	memset(w, 0, sizeof (wordlist));
+	switch (lc) {
 	case LANGUAGE_DEFAULT:
 	case LANGUAGE_EN:
 		json = fopen("mnemonics/english.json", "rb");
@@ -107,65 +106,56 @@ language_code lc;
 	}
 	if (!json)
 		return NULL;
-	fread(data, sizeof(char), 65536, json);
+	fread(data, sizeof (char), 65536, json);
 	fclose(json);
 	raw_word_list = cJSON_Parse(data);
 	w->lc = lc;
 	w->prefix_length = get_prefix_length(lc);
 	list_size = cJSON_GetArraySize(raw_word_list);
-	w->list_size = list_size;
-	w->words = malloc(sizeof(char*) * list_size);
-	i = 0;
-	if (!w->words)
-	{
-		free(w);
-		return NULL;
-	}
+	ARRAYLIST_RESIZE(w->words, list_size);
 	if (lc != LANGUAGE_EN_ELECTRUM)
-	{
-		w->truncated_words = malloc(sizeof(char*) * list_size);
-		if (!w->truncated_words)
-		{
-			free(w->words);
-			free(w);
-			return NULL;
-		}
-	}
+		ARRAYLIST_RESIZE(w->truncated_words, list_size);
+
 	cJSON_ArrayForEach(e, raw_word_list)
 	{
 		size_t l = strlen(e->valuestring);
-		char* value = malloc(l+1);
-		if (!value)
-		{
-			free(w->words);
-			free(w);
+		char* value = malloc(l + 1);
+		if (!value) {
+			while(w->words.count)
+			{
+				value = ARRAYLIST_POP(w->words);
+				free(value);
+			}
+			ARRAYLIST_FREE(w->words);
 			return NULL;
 		}
 		strncpy(value, e->valuestring, l + 1);
-		w->words[i] = value;
-		i++;
+		ARRAYLIST_PUSH(w->words, value);
 	}
-	i = 0;
-	if (lc != LANGUAGE_EN_ELECTRUM)
+	if (lc != LANGUAGE_EN_ELECTRUM) 
 	{
 		cJSON_ArrayForEach(e, raw_word_list)
 		{
-			size_t l = w->prefix_length + 1;
-			char* value = malloc(l);
-			if (!value)
-			{
-				for (i = 0; i < list_size; i++)
+			size_t l = strlen(e->valuestring);
+			char* value = malloc(l + 1);
+			if (!value) {
+				while(w->words.count)
 				{
-					free(w->words[i]);
+					value = ARRAYLIST_POP(w->words);
+					free(value);
 				}
-				free(w->truncated_words);
-				free(w->words);
+				ARRAYLIST_FREE(w->words);
+				while(w->truncated_words.count)
+				{
+					value = ARRAYLIST_POP(w->truncated_words);
+					free(value);
+				}
+				ARRAYLIST_FREE(w->truncated_words);
 				return NULL;
 			}
 			memset(value, 0, l);
 			strncpy(value, e->valuestring, w->prefix_length);
-			w->truncated_words[i] = value;
-			i++;
+			ARRAYLIST_PUSH(w->words, value);
 		}
 	}
 	cJSON_Delete(raw_word_list);
@@ -176,23 +166,23 @@ language_code lc;
 void destroy_wordlist(w)
 wordlist* w;
 {
-	int i, j;
-
-	for (i = 0; i < w->list_size; i++)
+	char *tmp;
+	while (w->words.count) 
 	{
-		free(w->words[i]);
+		tmp = ARRAYLIST_POP(w->words);
+		free(tmp);
 	}
-	free(w->words);
-	if (w->lc != LANGUAGE_EN_ELECTRUM)
+	ARRAYLIST_FREE(w->words);
+	if (w->lc != LANGUAGE_EN_ELECTRUM) 
 	{
-		for (j = 0; j < w->list_size; j++)
+		while (w->truncated_words.count)
 		{
-			free(w->truncated_words[j]);
+			tmp = ARRAYLIST_POP(w->truncated_words);
+			free(tmp);
 		}
-		free(w->truncated_words);
 	}
+	ARRAYLIST_FREE(w->truncated_words);
 	w->lc = 0;
-	w->list_size = 0;
 	w->prefix_length = 0;
 	free(w);
 }
