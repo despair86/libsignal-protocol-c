@@ -400,7 +400,7 @@ cleanup:
 		mbedtls_platform_zeroize(tmp, strlen(tmp)+1);
 		free(tmp);
 	}
-
+	ARRAYLIST_FREE(tmp_list);
 	/* we can dump the trimmed wordlist now */
 	if (pl)
 		utarray_free(trimmed_wordlist);
@@ -478,5 +478,7 @@ wordlist* word_list;
 		mbedtls_platform_zeroize(word, strlen(word)+1);
 		free(word);
 	}
+	ARRAYLIST_FREE((*result));
+	free(result);
 	return tmp;
 }
