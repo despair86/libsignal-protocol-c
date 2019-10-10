@@ -18,7 +18,7 @@
 
 /* 
  * File:   arraylist.h
- * Author: despair, kayomn
+ * Author: despair, kayomn, odilitime
  * Generic, dynamic, (mostly) type-safe, contiguous list comparable to C++'s `std::vector`.
  * Now supports C89 compilation systems!
  * Created on October 9, 2019, 6:01 PM
