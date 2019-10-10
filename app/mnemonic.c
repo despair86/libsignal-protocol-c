@@ -476,7 +476,9 @@ wordlist* word_list;
 	{
 		word = ARRAYLIST_POP((*result));
 		mbedtls_platform_zeroize(word, strlen(word)+1);
-		free(word);
+		/* the string pointing to spaces isn't on the heap */
+		if (word[0] != ' ')
+			free(word);
 	}
 	ARRAYLIST_FREE((*result));
 	free(result);
