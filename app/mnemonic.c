@@ -315,6 +315,9 @@ wordlist* word_list;
 	/* get our unique prefix length */
 	pl = word_list->prefix_length;
 	
+	if (!pl)
+		goto encode;
+	
 	/* Load truncated wordlist from master wordlist and place into searchable 
 	 * array
 	 */
@@ -332,6 +335,7 @@ wordlist* word_list;
 	/* truncate the mnemonic words to the prefix length 
 	 * then add to list on stack 
 	 */
+encode:
 	for (i = 0; i < list->count; i++) 
 	{
 		word = ARRAYLIST_GET((*list), i);
@@ -340,27 +344,40 @@ wordlist* word_list;
 			ARRAYLIST_PUSH(tmp_list, word);
 			continue;
 		}
+		if (!pl)
+			pl = strlen(word);
 		tmp = malloc(pl + 1);
 		snprintf(tmp, pl, "%s", word);
 		tmp[pl] = 0;
 		ARRAYLIST_PUSH(tmp_list, tmp);
+		/* clear prefix length if electrum so we can get 
+		 * the full string on the next iteration
+		 */
+		if (word_list->lc == LANGUAGE_EN_ELECTRUM)
+			pl = 0;
 	}
 
+	if (word_list->lc == LANGUAGE_EN_ELECTRUM)
+		pl = 0;
+
 	/* make sure the mnemonic words are actually valid */
-	for (i = 0; i < tmp_list.count; i++) 
+	if (pl) 
 	{
-		tmp = ARRAYLIST_GET(tmp_list, i);
-		/* skip over spaces */
-		if (tmp[0] == ' ')
-			continue;
-		p = utarray_find(trimmed_wordlist, &tmp, strsort);
-		if (!p)
+		for (i = 0; i < tmp_list.count; i++) 
 		{
-			printf("word %s not found in trimmed word map: language code: %d\n", tmp, word_list->lc);
-			goto cleanup;
+			tmp = ARRAYLIST_GET(tmp_list, i);
+			/* skip over spaces */
+			if (tmp[0] == ' ')
+				continue;
+			p = utarray_find(trimmed_wordlist, &tmp, strsort);
+			if (!p) 
+			{
+				printf("word %s not found in trimmed word map: language code: %d\n", tmp, word_list->lc);
+				goto cleanup;
+			}
 		}
 	}
-	
+
 	/* render the trimmed mnemonic key as a string */
 	tmp = malloc(8192); // *crosses fingers*
 	for (i = 0; i < tmp_list.count; i++) 
@@ -383,9 +400,11 @@ cleanup:
 		mbedtls_platform_zeroize(tmp, strlen(tmp)+1);
 		free(tmp);
 	}
-	
+
 	/* we can dump the trimmed wordlist now */
-	utarray_free(trimmed_wordlist);
+	if (pl)
+		utarray_free(trimmed_wordlist);
+
 	return crc % word_list->words.count;
 }
 
