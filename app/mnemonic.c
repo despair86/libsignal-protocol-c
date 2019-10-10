@@ -155,7 +155,7 @@ language_code lc;
 			}
 			memset(value, 0, l);
 			strncpy(value, e->valuestring, w->prefix_length);
-			ARRAYLIST_PUSH(w->words, value);
+			ARRAYLIST_PUSH(w->truncated_words, value);
 		}
 	}
 	cJSON_Delete(raw_word_list);

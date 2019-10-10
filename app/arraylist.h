@@ -1,5 +1,6 @@
 /*
  * Copyright (C) 2019 Rick V. All rights reserved.
+ * Copyright (C) 2019 R Odili and memeDownloader contribs. All rights reserved.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,8 +18,9 @@
 
 /* 
  * File:   arraylist.h
- * Author: despair
- *
+ * Author: despair, kayomn
+ * Generic, dynamic, (mostly) type-safe, contiguous list comparable to C++'s `std::vector`.
+ * Now supports C89 compilation systems!
  * Created on October 9, 2019, 6:01 PM
  */
 
@@ -29,9 +31,6 @@
 extern "C" {
 #endif
 
-/**
- * Generic, dynamic, (mostly) type-safe, contiguous list comparable to C++'s `std::vector`.
- */
 #include <stddef.h>
 #include <stdlib.h>
 #include <string.h>
