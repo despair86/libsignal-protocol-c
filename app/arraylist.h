@@ -90,16 +90,15 @@ do {                                                                          \
   }                                                                           \
 } while (0)
 
-#if defined(_MSC_VER) || (__STDC_VERSION__ < 199901L)
-# undef HAVE_STATIC_ASSERT
+#if defined(_MSC_VER) || (__STDC_VERSION__ < 201112L)
 # define _Static_assert(x, s) ((void) sizeof (struct { unsigned:-!(x); }))
 #endif
 
-#if !defined(HAVE_STATIC_ASSERT) && !defined(__cplusplus)
+#if (__STDC_VERSION__ < 201112L) && !defined(__cplusplus)
 # define static_assert _Static_assert
 #endif
 
-#if !defined(HAVE_STATIC_ASSERT_CXX) && defined(__cplusplus)
+#if (__STDC_VERSION__ < 201112L) && defined(__cplusplus)
 # define static_assert _Static_assert
 #endif
 

@@ -39,6 +39,7 @@ crypto_provider_mbedtls.c
 loki.c
 app.c
 mnemonic.c
+strings.c
 )
 
 add_executable(pager ${loki_pager_app_SRCS})

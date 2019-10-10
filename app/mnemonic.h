@@ -32,6 +32,7 @@ extern "C" {
 #include "arraylist.h"
 
     typedef ARRAYLIST(char*) stringList;
+    
 	typedef enum
 	{
 		LANGUAGE_DEFAULT,
@@ -61,6 +62,8 @@ extern "C" {
 
 	wordlist* initialise_wordlist(language_code);
 	void destroy_wordlist(wordlist*);
+    char *mnemonic_encode(char*, wordlist*);
+    
 #ifdef __cplusplus
 }
 #endif
