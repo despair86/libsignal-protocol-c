@@ -44,9 +44,7 @@ extern "C" {
 #ifdef _MSC_VER
 #include <malloc.h>
 #endif
-#endif
-
-#ifndef _MSC_VER
+#else
 #define DECLSPEC_NORETURN __attribute__((noreturn)) /* Also works in Oracle C */
 #endif
 
@@ -58,6 +56,10 @@ extern "C" {
 		RESTORE_EXISTING_SEED,
 		CREATE_NEW_SEED
 	};
+
+	/* yeah i'm a piece of shit for globalising these,
+	 * but hey it's still common data 
+	 */
 	CDKLABEL* title;
 	CDKSCREEN* cdkscreen;
 
@@ -85,6 +87,9 @@ extern "C" {
 	int create_or_restore_seed();
 	void restore_seed();
 	void new_user();
+	/* a simple fatal error handler.
+	 * pops a dialogue even in windows console builds.
+	 */
 	void fatal_error(const char*);
 
 #ifdef __cplusplus
