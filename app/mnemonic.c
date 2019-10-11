@@ -487,10 +487,14 @@ wordlist* word_list;
 	while (result->count)
 	{
 		word = ARRAYLIST_POP((*result));
-		mbedtls_platform_zeroize(word, strlen(word)+1);
-		/* the string pointing to spaces isn't on the heap */
+		/* the string pointing to spaces isn't on 
+		 * the heap and cannot be touched 
+		 */
 		if (word[0] != ' ')
+		{
+			mbedtls_platform_zeroize(word, strlen(word) + 1);
 			free(word);
+		}
 	}
 	ARRAYLIST_FREE((*result));
 	free(result);

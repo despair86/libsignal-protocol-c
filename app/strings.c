@@ -21,15 +21,10 @@
 #include <sys/types.h>
 #include <string.h>
 
-/*
+/* 
  * Copy string src to buffer dst of size dsize.  At most dsize-1
  * chars will be copied.  Always NUL terminates (unless dsize == 0).
  * Returns strlen(src); if retval >= dsize, truncation occurred.
- *
- * NOTE (by despair): To prevent truncation, perform bounds check
- * immediately before jumping here (or its inlined equivalent)
- * If overflow is detected, caller MUST return an error code and
- * let library client deal with the error condition.
  */
 size_t strlcpy(dst, src, dsize)
 char* dst;
@@ -67,11 +62,6 @@ size_t dsize;
  * will be copied.  Always NUL terminates (unless dsize <= strlen(dst)).
  * Returns strlen(src) + MIN(dsize, strlen(initial dst)).
  * If retval >= dsize, truncation occurred.
- *
- * NOTE (by despair): To prevent truncation, perform bounds check
- * immediately before jumping here (or its inlined equivalent)
- * If overflow is detected, caller MUST return an error code and
- * let library client deal with the error condition.
  */
 size_t strlcat(dst, src, dsize)
 char* dst;

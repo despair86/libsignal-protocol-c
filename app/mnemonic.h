@@ -62,7 +62,7 @@ extern "C" {
 
 	wordlist* initialise_wordlist(language_code);
 	void destroy_wordlist(wordlist*);
-    char *mnemonic_encode(char*, wordlist*);
+	char *mnemonic_encode(char*, wordlist*);
     
 #ifdef __cplusplus
 }
