@@ -183,7 +183,8 @@ void new_user()
 	waitCDKLabel(label, 0);
 }
 
-void fatal_error(msg) DECLSPEC_NORETURN
+/* gcc expects attributes before the signature??? */
+DECLSPEC_NORETURN void fatal_error(msg)
 const char* msg;
 {
 #ifdef _WIN32
