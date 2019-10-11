@@ -54,3 +54,10 @@ add_custom_command(TARGET pager POST_BUILD
   COMMAND curl https://curl.haxx.se/ca/cacert.pem > rootcerts.pem
   COMMENT "Downloading Netscape Navigator root certificate bundle"
 )
+
+if (MSVC AND NOT USE_SEPARATE_CURSES)
+add_custom_command(TARGET pager POST_BUILD
+  COMMAND EDITBIN -SUBSYSTEM:WINDOWS $<TARGET_FILE:pager>
+  COMMENT "setting PE header flag"
+)
+endif()
