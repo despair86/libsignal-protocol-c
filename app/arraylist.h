@@ -77,6 +77,11 @@ struct {                \
 do {                                                                          \
   void* oldBuffer = LIST.buffer;                                              \
   LIST.buffer = malloc(SIZE * sizeof(*LIST.buffer));                          \
+  if (!LIST.buffer)                                                           \
+  {                                                                           \
+    printf("failed to resize array buffer!\n");                               \
+    abort();                                                                  \
+  }                                                                           \
   LIST.capacity = SIZE;                                                       \
                                                                               \
   if (SIZE < LIST.count) {                                                    \

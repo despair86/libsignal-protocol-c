@@ -155,6 +155,8 @@ char** argv;
 
 	/* Display the first window */
 	w = initialise_wordlist(LANGUAGE_DEFAULT);
+	if (!w)
+		fatal_error("Could not load default mnemonic wordlist. Is Session installed properly?");
 	splash();
 	refreshCDKScreen(cdkscreen);
 #ifndef _EXPORT_BUILD

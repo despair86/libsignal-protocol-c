@@ -38,12 +38,18 @@ extern "C" {
 #include "loki.h"
 #include "http.h"
 #include <stdio.h>
+
 #ifdef _WIN32
 #include <windows.h>
 #ifdef _MSC_VER
 #include <malloc.h>
 #endif
 #endif
+
+#ifndef _MSC_VER
+#define DECLSPEC_NORETURN __attribute__((noreturn)) /* Also works in Oracle C */
+#endif
+
 #ifdef __sun
 #include <alloca.h>
 #endif
@@ -79,6 +85,7 @@ extern "C" {
 	int create_or_restore_seed();
 	void restore_seed();
 	void new_user();
+	void fatal_error(const char*);
 
 #ifdef __cplusplus
 }

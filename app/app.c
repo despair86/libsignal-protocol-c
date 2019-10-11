@@ -182,3 +182,15 @@ void new_user()
 	refreshCDKScreen(cdkscreen);
 	waitCDKLabel(label, 0);
 }
+
+void fatal_error(msg) DECLSPEC_NORETURN
+const char* msg;
+{
+#ifdef _WIN32
+	MessageBox(NULL, msg, "Fatal Error", MB_ICONHAND);
+	abort();
+#else
+	fprintf(stderr, "%s\n", msg);
+	abort();
+#endif
+}
