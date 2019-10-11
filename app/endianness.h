@@ -31,9 +31,21 @@
 #pragma once
 
 #include <assert.h>
-#include <stdbool.h>
 #include <stdint.h>
 #include <string.h>
+
+#if defined(_MSC_VER) || (__STDC_VERSION__ < 201112L)
+# define _Static_assert(x, s) ((void) sizeof (struct { unsigned:-!(x); }))
+# define inline __inline
+#endif
+
+#if (__STDC_VERSION__ < 201112L) && !defined(__cplusplus)
+# define static_assert _Static_assert
+#endif
+
+#if (__STDC_VERSION__ < 201112L) && defined(__cplusplus)
+# define static_assert _Static_assert
+#endif
 
 #ifndef _MSC_VER
 #include <sys/param.h>

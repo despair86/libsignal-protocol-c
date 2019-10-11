@@ -39,7 +39,8 @@ size_t strlcpy(char *dst, const char *src, size_t dsize);
 static get_prefix_length(l)
 language_code l;
 {
-	switch (l) {
+	switch (l)
+	{
 	case LANGUAGE_ZH_TW:
 		return 1;
 	case LANGUAGE_EN_ELECTRUM:
@@ -70,7 +71,8 @@ language_code lc;
 	if (!w || !data)
 		return NULL;
 	memset(w, 0, sizeof (wordlist));
-	switch (lc) {
+	switch (lc)
+	{
 	case LANGUAGE_DEFAULT:
 	case LANGUAGE_EN:
 		json = fopen("mnemonics/english.json", "rb");
@@ -130,8 +132,10 @@ language_code lc;
 	{
 		size_t l = strlen(e->valuestring);
 		char* value = malloc(l + 1);
-		if (!value) {
-			while (w->words.count) {
+		if (!value)
+		{
+			while (w->words.count)
+			{
 				value = ARRAYLIST_POP(w->words);
 				free(value);
 			}
@@ -141,19 +145,23 @@ language_code lc;
 		strncpy(value, e->valuestring, l + 1);
 		ARRAYLIST_PUSH(w->words, value);
 	}
-	if (lc != LANGUAGE_EN_ELECTRUM) {
+	if (lc != LANGUAGE_EN_ELECTRUM)
+	{
 
 		cJSON_ArrayForEach(e, raw_word_list)
 		{
 			size_t l = strlen(e->valuestring);
 			char* value = malloc(l + 1);
-			if (!value) {
-				while (w->words.count) {
+			if (!value)
+			{
+				while (w->words.count)
+				{
 					value = ARRAYLIST_POP(w->words);
 					free(value);
 				}
 				ARRAYLIST_FREE(w->words);
-				while (w->truncated_words.count) {
+				while (w->truncated_words.count)
+				{
 					value = ARRAYLIST_POP(w->truncated_words);
 					free(value);
 				}
@@ -174,13 +182,16 @@ void destroy_wordlist(w)
 wordlist* w;
 {
 	char *tmp;
-	while (w->words.count) {
+	while (w->words.count)
+	{
 		tmp = ARRAYLIST_POP(w->words);
 		free(tmp);
 	}
 	ARRAYLIST_FREE(w->words);
-	if (w->lc != LANGUAGE_EN_ELECTRUM) {
-		while (w->truncated_words.count) {
+	if (w->lc != LANGUAGE_EN_ELECTRUM)
+	{
+		while (w->truncated_words.count)
+		{
 			tmp = ARRAYLIST_POP(w->truncated_words);
 			free(tmp);
 		}
@@ -212,7 +223,6 @@ const void* _a, *_b;
  * to use this one, define USE_TINY_CRC32 in CPPFLAGS or CMAKE_C_FLAGS
  */
 #ifdef USE_TINY_CRC32
-
 static unsigned long crc32(crc, ptr, buf_len)
 unsigned long crc;
 const uint8_t* ptr;
@@ -224,7 +234,8 @@ size_t buf_len;
 	if (!ptr)
 		return 0;
 	crcu32 = ~crcu32;
-	while (buf_len--) {
+	while (buf_len--)
+	{
 		uint8_t b = *ptr++;
 		crcu32 = (crcu32 >> 4) ^ s_crc32[(crcu32 & 0xF) ^ (b & 0xF)];
 		crcu32 = (crcu32 >> 4) ^ s_crc32[(crcu32 & 0xF) ^ (b >> 4)];
@@ -232,7 +243,6 @@ size_t buf_len;
 	return ~crcu32;
 }
 #else
-
 /* Faster, but larger CPU cache footprint.
  */
 static unsigned long crc32(crc, ptr, buf_len)
@@ -283,7 +293,8 @@ size_t buf_len;
 	uint32_t crc32 = (uint32_t) crc ^ 0xFFFFFFFF;
 	const uint8_t *pByte_buf = (const uint8_t *) ptr;
 
-	while (buf_len >= 4) {
+	while (buf_len >= 4)
+	{
 		crc32 = (crc32 >> 8) ^ s_crc_table[(crc32 ^ pByte_buf[0]) & 0xFF];
 		crc32 = (crc32 >> 8) ^ s_crc_table[(crc32 ^ pByte_buf[1]) & 0xFF];
 		crc32 = (crc32 >> 8) ^ s_crc_table[(crc32 ^ pByte_buf[2]) & 0xFF];
@@ -292,7 +303,8 @@ size_t buf_len;
 		buf_len -= 4;
 	}
 
-	while (buf_len) {
+	while (buf_len)
+	{
 		crc32 = (crc32 >> 8) ^ s_crc_table[(crc32 ^ pByte_buf[0]) & 0xFF];
 		++pByte_buf;
 		--buf_len;
@@ -314,6 +326,7 @@ wordlist* word_list;
 
 	/* get our unique prefix length */
 	pl = word_list->prefix_length;
+	memset(&tmp_list, 0, sizeof(stringList));
 	
 	if (!pl)
 		goto encode;
@@ -322,7 +335,7 @@ wordlist* word_list;
 	 * array
 	 */
 	utarray_new(trimmed_wordlist, &ut_str_icd);
-	for (i = 0; i < word_list->truncated_words.count; i++) 
+	for (i = 0; i < word_list->truncated_words.count; i++)
 	{
 		/* makes a copy of the string */
 		tmp = ARRAYLIST_GET(word_list->truncated_words, i);
@@ -336,10 +349,10 @@ wordlist* word_list;
 	 * then add to list on stack 
 	 */
 encode:
-	for (i = 0; i < list->count; i++) 
+	for (i = 0; i < list->count; i++)
 	{
 		word = ARRAYLIST_GET((*list), i);
-		if (word[0] == ' ') 
+		if (word[0] == ' ')
 		{
 			ARRAYLIST_PUSH(tmp_list, word);
 			continue;
@@ -361,16 +374,16 @@ encode:
 		pl = 0;
 
 	/* make sure the mnemonic words are actually valid */
-	if (pl) 
+	if (pl)
 	{
-		for (i = 0; i < tmp_list.count; i++) 
+		for (i = 0; i < tmp_list.count; i++)
 		{
 			tmp = ARRAYLIST_GET(tmp_list, i);
 			/* skip over spaces */
 			if (tmp[0] == ' ')
 				continue;
 			p = utarray_find(trimmed_wordlist, &tmp, strsort);
-			if (!p) 
+			if (!p)
 			{
 				printf("word %s not found in trimmed word map: language code: %d\n", tmp, word_list->lc);
 				goto cleanup;
@@ -380,7 +393,7 @@ encode:
 
 	/* render the trimmed mnemonic key as a string */
 	tmp = malloc(8192); // *crosses fingers*
-	for (i = 0; i < tmp_list.count; i++) 
+	for (i = 0; i < tmp_list.count; i++)
 	{
 		word = ARRAYLIST_GET(tmp_list, i);
 		strlcat(tmp, word, 8192);
@@ -417,8 +430,7 @@ wordlist* word_list;
 {
 	size_t n, i, str_len;
 	char *tmp, *word;
-	stringList *result, *words;
-	uint32_t crc_index;
+	stringList *result;
 
 	str_len = strlen(hexString);
 
@@ -435,7 +447,7 @@ wordlist* word_list;
 	
 	memset(result, 0, sizeof (wordlist));
 	// 4 bytes -> 3 words.  8 digits base 16 -> 3 digits base 1626
-	for (i = 0; i < str_len / 4; i++, list_push(result, " ")) 
+	for (i = 0; i < str_len / 4; i++, list_push(result, " "))
 	{
 		uint32_t w[4];
 
