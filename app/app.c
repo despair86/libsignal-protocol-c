@@ -184,7 +184,7 @@ void new_user()
 }
 
 /* gcc expects attributes before the signature??? */
-DECLSPEC_NORETURN void fatal_error(msg)
+void fatal_error(msg) DECLSPEC_NORETURN
 const char* msg;
 {
 #ifdef _WIN32

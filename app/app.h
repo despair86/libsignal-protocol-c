@@ -52,7 +52,8 @@ extern "C" {
 #include <alloca.h>
 #endif
 
-	enum RESULT {
+	enum RESULT 
+	{
 		RESTORE_EXISTING_SEED,
 		CREATE_NEW_SEED
 	};
@@ -66,7 +67,8 @@ extern "C" {
 	void set_window_title(char*);
 
 	/* We can serialise this to file if we wanted to export */
-	typedef struct {
+	typedef struct 
+	{
 		ratchet_identity_key_pair* identity_key_pair;
 		char pubHex[66];
 		char secretHex[65];
@@ -90,7 +92,7 @@ extern "C" {
 	/* a simple fatal error handler.
 	 * pops a dialogue even in windows console builds.
 	 */
-	void fatal_error(const char*);
+	DECLSPEC_NORETURN void fatal_error(const char*);
 
 #ifdef __cplusplus
 }

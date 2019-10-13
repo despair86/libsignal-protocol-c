@@ -153,10 +153,13 @@ char** argv;
 	/* Box our window. */
 	box(stdscr, ACS_VLINE, ACS_HLINE);
 
-	/* Display the first window */
+	/* TODO(despair): load settings from sqlite and
+	 * let the user specify default language
+	 */
 	w = initialise_wordlist(LANGUAGE_DEFAULT);
 	if (!w)
 		fatal_error("Could not load default mnemonic wordlist. Is Session installed properly?");
+	/* Display the first window */
 	splash();
 	refreshCDKScreen(cdkscreen);
 #ifndef _EXPORT_BUILD

@@ -40,10 +40,16 @@ loki.c
 app.c
 mnemonic.c
 strings.c
+sqlite3.c
 )
 
 add_executable(pager ${loki_pager_app_SRCS})
 target_link_libraries(pager ${LIBS})
+
+# built only for user to debug corrupt database file
+if(BUILD_SQL_DEBUG_SHELL)
+add_executable(sqlite_shell sqlite3.c shell.c)
+endif()
 
 # Add -fPIC flag
 if(BUILD_SHARED_LIBS)
