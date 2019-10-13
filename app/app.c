@@ -183,8 +183,10 @@ void new_user()
 	waitCDKLabel(label, 0);
 }
 
-/* gcc expects attributes before the signature??? */
-void fatal_error(msg) DECLSPEC_NORETURN
+/* should be declared noreturn but GCC and Microsoft C can't agree on the
+ * order of function attributes in K&R style definitions
+ */
+void fatal_error(msg)
 const char* msg;
 {
 #ifdef _WIN32

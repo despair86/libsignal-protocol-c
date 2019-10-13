@@ -92,7 +92,7 @@ extern "C" {
 	/* a simple fatal error handler.
 	 * pops a dialogue even in windows console builds.
 	 */
-	DECLSPEC_NORETURN void fatal_error(const char*);
+	void fatal_error(const char*);
 
 #ifdef __cplusplus
 }
