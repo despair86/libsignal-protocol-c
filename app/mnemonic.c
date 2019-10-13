@@ -393,6 +393,9 @@ encode:
 
 	/* render the trimmed mnemonic key as a string */
 	tmp = malloc(8192); // *crosses fingers*
+	if (!tmp)
+		fatal_error("out of memory!");
+
 	for (i = 0; i < tmp_list.count; i++)
 	{
 		word = ARRAYLIST_GET(tmp_list, i);

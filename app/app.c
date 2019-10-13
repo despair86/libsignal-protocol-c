@@ -184,9 +184,13 @@ void new_user()
 }
 
 /* should be declared noreturn but GCC and Microsoft C can't agree on the
- * order of function attributes in K&R style definitions
+ * order of function attributes in K&R style function definitions
  */
-void fatal_error(msg)
+#ifndef _MSC_VER
+DECLSPEC_NORETURN void fatal_error(msg)
+#else
+void fatal_error(msg) DECLSPEC_NORETURN
+#endif
 const char* msg;
 {
 #ifdef _WIN32

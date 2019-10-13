@@ -204,7 +204,7 @@ uint64_t x;
 #  endif
 #endif /* __OpenBSD__ */
 
-#if defined(__GNUC__)
+#if defined(__GNUC__) || defined(__SUNPRO_C)
 #define UNUSED __attribute__((unused))
 #else
 #define UNUSED
