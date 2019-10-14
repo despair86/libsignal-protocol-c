@@ -42,8 +42,9 @@ endif()
 
 CHECK_SYMBOL_EXISTS(memset_s "string.h" HAVE_MEMSET_S)
 
-IF(WIN32)
-  CHECK_SYMBOL_EXISTS(SecureZeroMemory "windows.h;winbase.h" HAVE_SECUREZEROMEMORY)
+# only Microsoft C has this intrinsic
+IF(MSVC)
+  add_definitions(-DHAVE_SECUREZEROMEMORY)
 ENDIF()
 
 IF(BUILD_TESTING)

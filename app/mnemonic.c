@@ -21,6 +21,7 @@
 #include "endianness.h"
 #include "mnemonic.h"
 #include "arraylist.h"
+#include <curve.h>
 #include <utarray.h>
 #include <mbedtls/platform_util.h>
 #include <stdio.h>
@@ -28,12 +29,25 @@
 #include <string.h>
 #include <cjson.h>
 
+#if __STDC_VERSION__ >= 199901L
+#include <stdbool.h>
+#else
+#define bool int
+#define true 1
+#define false 0
+#endif
+
 #if defined(_WIN32) || !defined(__sun)
 #ifndef BSD
 size_t strlcat(char *dst, const char *src, size_t dsize);
 size_t strlcpy(char *dst, const char *src, size_t dsize);
 #endif
 #endif
+
+#ifdef _MSC_VER
+char* strtok_r(char* __restrict s, const char* __restrict delim, char** __restrict last);
+#endif
+
 
 /**/
 static get_prefix_length(l)
@@ -427,15 +441,15 @@ cleanup:
 /* returns a string with the encoded key 
  * caller must scrub the mnemonic after use
  */
-char* mnemonic_encode(hexString, word_list)
-char* hexString;
+char* mnemonic_encode(secret_key, word_list)
+uint8_t* secret_key;
 wordlist* word_list;
 {
 	size_t n, i, str_len;
 	char *tmp, *word;
 	stringList *result;
 
-	str_len = strlen(hexString);
+	str_len = strlen(secret_key);
 
 	if (str_len % 4 != 0 || str_len == 0)
 		return NULL;
@@ -454,7 +468,7 @@ wordlist* word_list;
 	{
 		uint32_t w[4];
 
-		w[0] = SWAP32LE(*(const uint32_t*) (hexString + (i * 4)));
+		w[0] = SWAP32LE(*(const uint32_t*) (secret_key + (i * 4)));
 
 		w[1] = w[0] % n;
 		w[2] = ((w[0] / n) + w[1]) % n;
