@@ -49,6 +49,15 @@ int ec_private_key_compare(const ec_private_key *key1, const ec_private_key *key
  */
 int ec_private_key_serialize(signal_buffer **buffer, const ec_private_key *key);
 
+/**
+ * Deserialize the private key into an ec_private_key object that can be used by the protocol.
+ *
+ * @param key_data Pointer to a buffer that contains an elliptic-curve private key.
+ * @param private_key object where private key will be loaded into.
+ * @return 0 on success, negative on failure
+ */
+int ec_private_key_load(uint8_t* key_data, ec_private_key** private_key);
+
 void ec_private_key_destroy(signal_type_base *type);
 
 int ec_key_pair_create(ec_key_pair **key_pair, ec_public_key *public_key, ec_private_key *private_key);

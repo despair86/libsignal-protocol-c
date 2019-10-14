@@ -215,6 +215,37 @@ int ec_private_key_serialize(signal_buffer **buffer, const ec_private_key *key)
     return 0;
 }
 
+/* new function, cue K&R style defs */
+int ec_private_key_load(key_data, private_key)
+uint8_t* key_data;
+ec_private_key** private_key;
+{
+    int result = 0;
+    ec_private_key* key = 0;
+
+    key = malloc(sizeof(ec_private_key));
+    if (!key) {
+        result = SG_ERR_NOMEM;
+        goto complete;
+    }
+
+    SIGNAL_INIT(key, ec_private_key_destroy);
+
+    memcpy(key->data, key_data, DJB_KEY_LEN);
+
+complete:
+    if (result < 0) {
+        if (key) {
+            SIGNAL_UNREF(key);
+        }
+    }
+    else {
+        *private_key = key;
+    }
+
+    return result;
+}
+
 int ec_private_key_serialize_protobuf(ProtobufCBinaryData *buffer, const ec_private_key *key)
 {
     size_t len = 0;
