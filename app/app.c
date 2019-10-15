@@ -168,7 +168,7 @@ void restore_seed()
 }
 
 #ifdef _WIN32
-void copy_to_clipboard(str)
+static void copy_to_clipboard(str)
 const char* str;
 {
 	HGLOBAL hdst;
@@ -283,9 +283,6 @@ void new_user()
 	}
 }
 
-/* should be declared noreturn but GCC and Microsoft C can't agree on the
- * order of function attributes in K&R style function definitions
- */
 #ifndef _MSC_VER
 DECLSPEC_NORETURN void fatal_error(msg)
 #else
