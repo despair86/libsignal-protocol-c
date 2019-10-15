@@ -16,6 +16,10 @@
  */
 
 /* cuz loonix doesn't have strlcpy() REEEEEE */
+#ifndef _WIN32
+#include <sys/param.h>
+#endif
+
 #if defined(_WIN32) || !defined(__sun)
 #ifndef BSD
 #include <sys/types.h>

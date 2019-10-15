@@ -37,6 +37,10 @@
 #define false 0
 #endif
 
+#ifndef _WIN32
+#include <sys/param.h>
+#endif
+
 #if defined(_WIN32) || !defined(__sun)
 #ifndef BSD
 size_t strlcat(char *dst, const char *src, size_t dsize);
