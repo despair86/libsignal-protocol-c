@@ -642,7 +642,7 @@ wordlist* wl;
 
 	if (has_checksum)
 	{
-		if (!checksum_test(seed, wl))
+		if (!checksum_test(&seed, wl))
 		{
 			// Checksum fail
 			fprintf(stderr, "Invalid seed: invalid checksum");

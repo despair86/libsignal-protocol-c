@@ -167,6 +167,7 @@ void restore_seed()
 	destroyCDKLabel(error_msg);
 }
 
+/* Windows NT only. Copies a string to the clipboard. */
 #ifdef _WIN32
 static void copy_to_clipboard(str)
 const char* str;
@@ -264,6 +265,7 @@ void new_user()
 		strlcat(msg[8], word, 1024);
 		strlcat(msg[8], " ", 1024);
 	}
+	/* generate UI widgets */
 	label = newCDKLabel(cdkscreen, CENTER, CENTER, (CDK_CSTRING2)msg, 9, TRUE, FALSE);
 #ifdef _WIN32
 	clip_label = newCDKLabel(cdkscreen, CENTER, LINES - 3, clip_msg, 2, FALSE, FALSE);
@@ -272,7 +274,7 @@ void new_user()
 	refreshCDKScreen(cdkscreen);
 	waitCDKLabel(label, 0);
 
-	/* ok scrub everything */
+	/* scrub everything */
 	for (i = 4; i < 9; i++)
 		mbedtls_platform_zeroize(msg[i], 1024);
 	while (seed_list.count)
@@ -281,6 +283,7 @@ void new_user()
 		mbedtls_platform_zeroize(word, strlen(word) + 1);
 		free(word);
 	}
+	ARRAYLIST_FREE(seed_list);
 }
 
 #ifndef _MSC_VER
