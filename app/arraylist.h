@@ -78,10 +78,7 @@ do {                                                                          \
   void* oldBuffer = LIST.buffer;                                              \
   LIST.buffer = malloc(SIZE * sizeof(*LIST.buffer));                          \
   if (!LIST.buffer)                                                           \
-  {                                                                           \
-    printf("failed to resize array buffer!\n");                               \
-    abort();                                                                  \
-  }                                                                           \
+    fatal_error("failed to resize array buffer!");                            \
   LIST.capacity = SIZE;                                                       \
                                                                               \
   if (SIZE < LIST.count) {                                                    \

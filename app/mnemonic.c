@@ -742,7 +742,7 @@ cleanup:
 	{
 		uint32_t n;
 		n = ARRAYLIST_POP(matched_indices);
-		mbedtls_platform_zeroize(n, sizeof(uint32_t));
+		mbedtls_platform_zeroize(&n, sizeof(uint32_t));
 	}
 	ARRAYLIST_FREE(matched_indices);
 	for (i = 0; i < dst.count; i++)
