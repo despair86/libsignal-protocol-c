@@ -535,18 +535,18 @@ wordlist *wl;
 	if (pl)
 	{
 		trimmed_word = malloc(pl + 1);
-		snprintf(trimmed_word, pl, "%s", last_word);
+		snprintf(trimmed_word, pl + 1, "%s", last_word);
 		trimmed_word[pl] = 0;
 	}
 	else
 		trimmed_word = last_word;
 
-	checksum = ARRAYLIST_GET(wl->words, create_checksum_index(seed, wl));
+	checksum = ARRAYLIST_GET((*seed), create_checksum_index(seed, wl));
 
 	if (pl)
 	{
 		trimmed_cksum = malloc(pl + 1);
-		snprintf(trimmed_cksum, pl, "%s", checksum);
+		snprintf(trimmed_cksum, pl + 1, "%s", checksum);
 		trimmed_cksum[pl] = 0;
 	}
 	else
