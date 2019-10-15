@@ -181,7 +181,7 @@ const char* str;
 	memcpy(dst, str, len + 1);
 	dst[len] = 0;
 	GlobalUnlock(hdst);
-	!OpenClipboard(NULL);
+	OpenClipboard(NULL);
 	EmptyClipboard();
 	SetClipboardData(CF_TEXT, hdst);
 	CloseClipboard();
