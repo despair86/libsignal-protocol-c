@@ -188,6 +188,9 @@ char** argv;
 	status = 0;
 #ifdef _WIN32
 	DeleteCriticalSection(&global_mutex);
+	OpenClipboard(NULL);
+	EmptyClipboard();
+	CloseClipboard();
 #endif
 	return status;
 }

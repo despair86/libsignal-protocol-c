@@ -167,10 +167,31 @@ void restore_seed()
 	destroyCDKLabel(error_msg);
 }
 
+#ifdef _WIN32
+void copy_to_clipboard(str)
+const char* str;
+{
+	HGLOBAL hdst;
+	LPSTR dst;
+	size_t len;
+
+	len = strlen(str);
+	hdst = GlobalAlloc(GMEM_MOVEABLE | GMEM_DDESHARE, len + 1);
+	dst = GlobalLock(hdst);
+	memcpy(dst, str, len + 1);
+	dst[len] = 0;
+	GlobalUnlock(hdst);
+	!OpenClipboard(NULL);
+	EmptyClipboard();
+	SetClipboardData(CF_TEXT, hdst);
+	CloseClipboard();
+}
+#endif
+
 void new_user()
 {
-	CDKLABEL* label;
-	char* msg[9], * seed, * key, * word, * loc;
+	CDKLABEL* label, *clip_label;
+	char* msg[9], * clip_msg[2], * seed, * key, * word, * loc;
 	int i, j;
 	stringList seed_list;
 
@@ -180,10 +201,18 @@ void new_user()
 	msg[2] = "<C>or migrate to a new device.";
 	msg[3] = "";
 
+#ifdef _WIN32
+	clip_msg[0] = "<C>This seed has been copied to the clipboard.";
+	clip_msg[1] = "<C>The clipboard will be cleared when Pager exits.";
+#endif
+
 	/* get our key */
 	key = signal_buffer_data(new_user_ctx->secret_key);
 	/* encode key into seed */
 	seed = mnemonic_encode(key, w, signal_buffer_len(new_user_ctx->secret_key));
+#ifdef _WIN32
+	copy_to_clipboard(seed);
+#endif
 	/* regenerate the list we just junked */
 	for (word = strtok_r(seed, " ", &loc); word != NULL; word = strtok_r(NULL, " ", &loc))
 		ARRAYLIST_PUSH(seed_list, strdup(word));
@@ -236,6 +265,9 @@ void new_user()
 		strlcat(msg[8], " ", 1024);
 	}
 	label = newCDKLabel(cdkscreen, CENTER, CENTER, (CDK_CSTRING2)msg, 9, TRUE, FALSE);
+#ifdef _WIN32
+	clip_label = newCDKLabel(cdkscreen, CENTER, LINES - 3, clip_msg, 2, FALSE, FALSE);
+#endif
 	set_window_title("<C>New User Registration");
 	refreshCDKScreen(cdkscreen);
 	waitCDKLabel(label, 0);
