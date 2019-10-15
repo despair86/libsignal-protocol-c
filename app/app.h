@@ -37,6 +37,7 @@ extern "C" {
 #include <mbedtls/platform_util.h>
 #include "loki.h"
 #include "http.h"
+#include "mnemonic.h"
 #include <stdio.h>
 
 #ifdef _WIN32
@@ -63,6 +64,7 @@ extern "C" {
 	 */
 	CDKLABEL* title;
 	CDKSCREEN* cdkscreen;
+	wordlist* w;
 
 	void set_window_title(char*);
 

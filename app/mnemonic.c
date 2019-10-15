@@ -340,6 +340,7 @@ wordlist* word_list;
 
 	/* get our unique prefix length */
 	pl = word_list->prefix_length;
+	crc = 0l;
 	memset(&tmp_list, 0, sizeof(stringList));
 	
 	if (!pl)
@@ -366,15 +367,10 @@ encode:
 	for (i = 0; i < list->count; i++)
 	{
 		word = ARRAYLIST_GET((*list), i);
-		if (word[0] == ' ')
-		{
-			ARRAYLIST_PUSH(tmp_list, word);
-			continue;
-		}
 		if (!pl)
 			pl = strlen(word);
 		tmp = malloc(pl + 1);
-		snprintf(tmp, pl, "%s", word);
+		snprintf(tmp, pl+1, "%s", word);
 		tmp[pl] = 0;
 		ARRAYLIST_PUSH(tmp_list, tmp);
 		/* clear prefix length if electrum so we can get 
@@ -393,9 +389,6 @@ encode:
 		for (i = 0; i < tmp_list.count; i++)
 		{
 			tmp = ARRAYLIST_GET(tmp_list, i);
-			/* skip over spaces */
-			if (tmp[0] == ' ')
-				continue;
 			p = utarray_find(trimmed_wordlist, &tmp, strsort);
 			if (!p)
 			{
@@ -406,7 +399,7 @@ encode:
 	}
 
 	/* render the trimmed mnemonic key as a string */
-	tmp = malloc(8192); // *crosses fingers*
+	tmp = calloc(8192, sizeof(char)); // *crosses fingers*
 	if (!tmp)
 		fatal_error("out of memory!");
 
@@ -415,6 +408,10 @@ encode:
 		word = ARRAYLIST_GET(tmp_list, i);
 		strlcat(tmp, word, 8192);
 	}
+
+	/* strip trailing space if any */
+	if (tmp[strlen(tmp) - 1] == ' ')
+		tmp[strlen(tmp) - 1] = 0;
 	
 	/* get the CRC-32 of our string */
 	crc = crc32(0L, tmp, strlen(tmp));
@@ -435,23 +432,22 @@ cleanup:
 	if (pl)
 		utarray_free(trimmed_wordlist);
 
-	return crc % word_list->words.count;
+	return crc % list->count;
 }
 
 /* returns a string with the encoded key 
  * caller must scrub the mnemonic after use
  */
-char* mnemonic_encode(secret_key, word_list)
+char* mnemonic_encode(secret_key, word_list, len)
 uint8_t* secret_key;
 wordlist* word_list;
+size_t len;
 {
-	size_t n, i, str_len;
+	size_t n, i;
 	char *tmp, *word;
 	stringList *result;
 
-	str_len = strlen(secret_key);
-
-	if (str_len % 4 != 0 || str_len == 0)
+	if (len % 4 != 0 || len == 0)
 		return NULL;
 	if (!word_list)
 		return NULL;
@@ -464,7 +460,7 @@ wordlist* word_list;
 	
 	memset(result, 0, sizeof (wordlist));
 	// 4 bytes -> 3 words.  8 digits base 16 -> 3 digits base 1626
-	for (i = 0; i < str_len / 4; i++, list_push(result, " "))
+	for (i = 0; i < len / 4; i++)
 	{
 		uint32_t w[4];
 
@@ -477,11 +473,9 @@ wordlist* word_list;
 		/* words += n[w[1]]; */
 		tmp = ARRAYLIST_GET(word_list->words, w[1]);
 		ARRAYLIST_PUSH((*result), strdup(tmp));
-		list_push(result, " ");
 		/* words += n[w[2]]; */
 		tmp = ARRAYLIST_GET(word_list->words, w[2]);
 		ARRAYLIST_PUSH((*result), strdup(tmp));
-		list_push(result, " ");
 		/* words += n[w[3]]; */
 		tmp = ARRAYLIST_GET(word_list->words, w[3]);
 		ARRAYLIST_PUSH((*result), strdup(tmp));
@@ -489,31 +483,294 @@ wordlist* word_list;
 		mbedtls_platform_zeroize(w, sizeof (w));
 	}
 	/* add checksum word to the end of the word_list */
-	tmp = ARRAYLIST_GET(word_list->words, create_checksum_index(result, word_list));
+	tmp = ARRAYLIST_GET((*result), create_checksum_index(result, word_list));
 	ARRAYLIST_PUSH((*result), strdup(tmp));
 	
 	/* render the mnemonic key as a string */
-	tmp = malloc(8192); // *crosses fingers*
+	tmp = calloc(8192, sizeof(char)); // *crosses fingers*
 	for (i = 0; i < result->count; i++)
 	{
 		word = ARRAYLIST_GET((*result), i);
 		strlcat(tmp, word, 8192);
+		/* add spaces */
+		strlcat(tmp, " ", 8192);
 	}
+	/* strip trailing space if any */
+	if (tmp[strlen(tmp) - 1] == ' ')
+		tmp[strlen(tmp) - 1] = 0;
 	
 	/* clean up temp array */
 	while (result->count)
 	{
 		word = ARRAYLIST_POP((*result));
-		/* the string pointing to spaces isn't on 
-		 * the heap and cannot be touched 
-		 */
-		if (word[0] != ' ')
-		{
-			mbedtls_platform_zeroize(word, strlen(word) + 1);
-			free(word);
-		}
+		mbedtls_platform_zeroize(word, strlen(word) + 1);
+		free(word);
 	}
 	ARRAYLIST_FREE((*result));
 	free(result);
 	return tmp;
+}
+
+/*!
+ * \brief Does the checksum test on the seed passed.
+ * \param seed                  Vector of seed words
+ * \param wl                    our existing wordlist
+ * \return                      True if the test passed false if not.
+ */
+static bool checksum_test(seed, wl)
+stringList* seed;
+wordlist *wl;
+{
+	char* last_word, *checksum, *trimmed_word, *trimmed_cksum;
+	int pl, r;
+
+	if (!seed->count)
+		return false;
+
+	pl = wl->prefix_length;
+
+	/* The last word is the checksum. */
+	last_word = ARRAYLIST_POP((*seed));
+
+	if (pl)
+	{
+		trimmed_word = malloc(pl + 1);
+		snprintf(trimmed_word, pl, "%s", last_word);
+		trimmed_word[pl] = 0;
+	}
+	else
+		trimmed_word = last_word;
+
+	checksum = ARRAYLIST_GET(wl->words, create_checksum_index(seed, wl));
+
+	if (pl)
+	{
+		trimmed_cksum = malloc(pl + 1);
+		snprintf(trimmed_cksum, pl, "%s", checksum);
+		trimmed_cksum[pl] = 0;
+	}
+	else
+		trimmed_cksum = checksum;
+
+	r = strcmp(trimmed_word, trimmed_cksum);
+#ifdef _DEBUG
+	printf("Checksum is %s\n", (r ? "invalid" : "valid"));
+#endif
+	/* because the caller winds up popping it back off itself, so add it back in */
+	if (!r)
+		ARRAYLIST_PUSH((*seed), last_word);
+
+	return !r;
+}
+
+/* std::vector<uint32_t> ftw */
+/* also a vector for key data */
+typedef ARRAYLIST(uint32_t) intList;
+typedef ARRAYLIST(uint8_t) byteList;
+/*!
+ * \brief Converts seed words to bytes (secret key).
+ * \param  words           String containing the words separated by spaces.
+ * \param  len             The number of bytes to expect, 0 if unknown
+ * \param  duplicate       If true and len is not zero, we accept half the data, and duplicate it
+ * \param  wl              An existing wordlist created by initialise_wordlist(). String is assumed to be in this language.
+ * \return                 NULL if not a multiple of 3 words, or if word is not in the words list, 
+ *                         else, a secret key that can be loaded into an ec_private_key* object
+ */
+static uint8_t* internal_mnemonic_decode(words, len, duplicate, wl)
+const char* words;
+size_t len;
+bool duplicate;
+wordlist* wl;
+{
+	/* wipe these before returning! */
+	stringList seed;
+	intList matched_indices;
+	byteList dst;
+
+	uint32_t word_list_length, idx;
+	UT_array* word_map;
+	unsigned int i, j;
+	bool has_checksum;
+	uint8_t *key;
+	char k;
+	size_t expected;
+	char* loc, * word, * tmp, ** p;
+	
+	memset(&seed, 0, sizeof(stringList));
+	memset(&matched_indices, 0, sizeof(intList));
+	memset(&dst, 0, sizeof(byteList));
+	
+	if (len % 4)
+	{
+		fprintf(stderr, "Invalid key size: not a multiple of 4\n");
+		return NULL;
+	}
+
+	/* dup mnemonic string into writable array */
+	tmp = strdup(words);
+
+	/* words.split(seed) */
+	for (word = strtok_r(tmp, " ", &loc); word != NULL; word = strtok_r(NULL, " ", &loc))
+		list_push(&seed, strdup(word));
+
+	/* we've already dup'd the words into the list */
+	mbedtls_platform_zeroize(tmp, strlen(tmp) + 1);
+	free(tmp);
+	tmp = NULL;
+	key = calloc(len, sizeof(uint8_t));
+
+	if (!key)
+		return NULL;
+
+	has_checksum = true;
+	if (len)
+	{
+		// error on non-compliant word list
+		expected = len * 8 * 3 / 32;
+		if (seed.count != expected / 2 && seed.count != expected &&
+			seed.count != expected + 1)
+		{
+			fprintf(stderr, "Invalid seed: unexpected number of words");
+			return NULL;
+		}
+
+		// If it is seed with a checksum.
+		has_checksum = seed.count == (expected + 1);
+	}
+	
+	word_list_length = wl->words.count;
+
+	if (has_checksum)
+	{
+		if (!checksum_test(seed, wl))
+		{
+			// Checksum fail
+			fprintf(stderr, "Invalid seed: invalid checksum");
+			tmp = NULL;
+			goto cleanup;
+		}
+		word = ARRAYLIST_POP(seed);
+		mbedtls_platform_zeroize(word, strlen(word) + 1);
+		free(word);
+		word = NULL;
+	}
+
+	/* match the seed words against our wordlist */
+	utarray_new(word_map, &ut_str_icd);
+	for (i = 0; i < wl->words.count; i++)
+	{
+		/* makes a copy of the string */
+		tmp = ARRAYLIST_GET(wl->words, i);
+		utarray_push_back(word_map, &tmp);
+	}
+
+	for (i = 0; i < seed.count; i++)
+	{
+		tmp = ARRAYLIST_GET(seed, i);
+		p = utarray_find(word_map, &tmp, strsort);
+		if (!p)
+		{
+			printf("word %s not found in trimmed word map: language code: %d\n", tmp, wl->lc);
+			tmp = NULL;
+			goto cleanup;
+		}
+		idx = utarray_eltidx(word_map, p);
+		ARRAYLIST_PUSH(matched_indices, idx);
+	}
+
+	/* convert to key */
+	for (i = 0; i < seed.count / 3; i++)
+	{
+		uint32_t w[4];
+		w[1] = ARRAYLIST_GET(matched_indices, i * 3);
+		w[2] = ARRAYLIST_GET(matched_indices, i * 3 + 1);
+		w[3] = ARRAYLIST_GET(matched_indices, i * 3 + 2);
+
+
+		w[0] = w[1] + word_list_length * (((word_list_length - w[1]) + w[2]) % word_list_length) +
+			word_list_length * word_list_length * (((word_list_length - w[2]) + w[3]) % word_list_length);
+
+		if (!(w[0] % word_list_length == w[1]))
+		{
+			mbedtls_platform_zeroize(w, sizeof(w));
+			fprintf(stderr, "Invalid seed: mumble mumble");
+			tmp = NULL;
+			goto cleanup;
+		}
+
+		/* copy 4 bytes to array */
+		for (i = 0; i < 4; i++)
+			ARRAYLIST_PUSH(dst, (uint8_t)w[i]);
+
+		mbedtls_platform_zeroize(w, sizeof(w));
+	}
+
+	if (len > 0 && duplicate)
+	{
+		const size_t expected = len * 3 / 32;
+		if (seed.count == expected / 2)
+		{
+			ARRAYLIST_PUSH(dst, (uint8_t)' ');
+			j = dst.count - 1; /* drop trailing space */
+			for (i = 0; i < j; i++)
+			{
+				k = ARRAYLIST_GET(dst, i);
+				ARRAYLIST_PUSH(dst, k);
+			}
+		}
+	}
+
+	/* if we get a 26 word seed, we can just drop the other half of the list */
+	tmp = key;
+	for (i = 0; i < len; i++)
+	{
+		k = ARRAYLIST_GET(dst, i);
+		memcpy(key, &k, sizeof(uint8_t));
+		key++;
+	}
+
+cleanup:
+	utarray_free(word_map);
+	for (i = 0; i < seed.count; i++)
+	{
+		word = ARRAYLIST_POP(seed);
+		mbedtls_platform_zeroize(word, strlen(word)+1);
+		free(word);
+	}
+	ARRAYLIST_FREE(seed);
+	for (i = 0; i < matched_indices.count; i++)
+	{
+		uint32_t n;
+		n = ARRAYLIST_POP(matched_indices);
+		mbedtls_platform_zeroize(n, sizeof(uint32_t));
+	}
+	ARRAYLIST_FREE(matched_indices);
+	for (i = 0; i < dst.count; i++)
+	{
+		k = ARRAYLIST_POP(dst);
+		k = 0;
+	}
+	ARRAYLIST_FREE(dst);
+	return tmp;
+}
+
+/*!
+ * \brief Converts seed words to bytes (secret key).
+ * \param  words           String containing the words separated by spaces.
+ * \param  wl              Language of the seed as found gets written here.
+ * \return                 NULL if not a multiple of 3 words, or if word is not in the words list
+ *                         else, a buffer that can be crammed into ec_private_key_load()
+ */
+uint8_t* mnemonic_decode(words, wl)
+const char* words;
+wordlist* wl;
+{
+	uint8_t* s;
+	s = internal_mnemonic_decode(words, 32, true, wl);
+	if (!s)
+	{
+		fprintf(stderr, "Invalid seed: failed to convert words to bytes\n");
+		return NULL;
+	}
+	return s;
 }

@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 #include "app.h"
-
+#include "mnemonic.h"
 
  /* For now, each screen in the user flow is coded as a separate closed
   * function. If anyone has any better ideas, please send in a patch!
@@ -170,17 +170,85 @@ void restore_seed()
 void new_user()
 {
 	CDKLABEL* label;
-	char* msg[3];
+	char* msg[9], * seed, * key, * word, * loc;
+	int i, j;
+	stringList seed_list;
 
-	msg[0] = "Save these keys somewhere safe!";
-	msg[1] = alloca(512);
-	msg[2] = alloca(512);
-	snprintf(msg[1], 512, "Public Key:  %s", new_user_ctx->pubHex);
-	snprintf(msg[2], 512, "Private Key: %s", new_user_ctx->secretHex);
-	label = newCDKLabel(cdkscreen, CENTER, CENTER, (CDK_CSTRING2)msg, 3, TRUE, FALSE);
+	memset(&seed_list, 0, sizeof(stringList));
+	msg[0] = "<C>Please save the seed below in a safe location.";
+	msg[1] = "<C>It can be used to restore your account if you lose access";
+	msg[2] = "<C>or migrate to a new device.";
+	msg[3] = "";
+
+	/* get our key */
+	key = signal_buffer_data(new_user_ctx->secret_key);
+	/* encode key into seed */
+	seed = mnemonic_encode(key, w, signal_buffer_len(new_user_ctx->secret_key));
+	/* regenerate the list we just junked */
+	for (word = strtok_r(seed, " ", &loc); word != NULL; word = strtok_r(NULL, " ", &loc))
+		ARRAYLIST_PUSH(seed_list, strdup(word));
+	/* original string is modified, trash it */
+	mbedtls_platform_zeroize(seed, 8192);
+	free(seed);
+	/* load words five at a time */
+	msg[4] = alloca(1024);
+	msg[5] = alloca(1024);
+	msg[6] = alloca(1024);
+	msg[7] = alloca(1024);
+	msg[8] = alloca(1024);
+
+	/* Is it possible to optimise this? */
+	for (i = 4; i < 9; i++)
+		memset(msg[i], 0, 1024);
+	strlcat(msg[4], "<C>", 1024);
+	strlcat(msg[5], "<C>", 1024);
+	strlcat(msg[6], "<C>", 1024);
+	strlcat(msg[7], "<C>", 1024);
+	strlcat(msg[8], "<C>", 1024);
+	for (i = 0; i < 5; i++)
+	{
+		word = ARRAYLIST_GET(seed_list, i);
+		strlcat(msg[4], word, 1024);
+		strlcat(msg[4], " ", 1024);
+	}
+	for (i = 5; i < 10; i++)
+	{
+		word = ARRAYLIST_GET(seed_list, i);
+		strlcat(msg[5], word, 1024);
+		strlcat(msg[5], " ", 1024);
+	}
+	for (i = 10; i < 15; i++)
+	{
+		word = ARRAYLIST_GET(seed_list, i);
+		strlcat(msg[6], word, 1024);
+		strlcat(msg[6], " ", 1024);
+	}
+	for (i = 15; i < 20; i++)
+	{
+		word = ARRAYLIST_GET(seed_list, i);
+		strlcat(msg[7], word, 1024);
+		strlcat(msg[7], " ", 1024);
+	}
+	for (i = 20; i < 25; i++)
+	{
+		word = ARRAYLIST_GET(seed_list, i);;
+		strlcat(msg[8], word, 1024);
+		strlcat(msg[8], " ", 1024);
+	}
+	label = newCDKLabel(cdkscreen, CENTER, CENTER, (CDK_CSTRING2)msg, 9, TRUE, FALSE);
 	set_window_title("<C>New User Registration");
 	refreshCDKScreen(cdkscreen);
 	waitCDKLabel(label, 0);
+
+	/* ok scrub everything */
+	for (i = 4; i < 9; i++)
+		mbedtls_platform_zeroize(msg[i], 1024);
+	while (seed_list.count)
+	{
+		word = ARRAYLIST_POP(seed_list);
+		mbedtls_platform_zeroize(word, strlen(word) + 1);
+		free(word);
+	}
 }
 
 /* should be declared noreturn but GCC and Microsoft C can't agree on the

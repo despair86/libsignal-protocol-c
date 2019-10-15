@@ -17,7 +17,6 @@
 
 /* Entry point for Loki Pager text-mode client for Loki communications network */
 #include "app.h"
-#include "mnemonic.h"
 /* Global variables and fixed app-specific data */
 char* XCursesProgramName = "Loki Pager";
 
@@ -118,7 +117,6 @@ char** argv;
 	CDK_PARAMS params;
 	enum RESULT r;
 	char* window_text[1];
-	wordlist *w;
 
 	CDKparseParams(argc, argv, &params, "s:" CDK_CLI_PARAMS);
 

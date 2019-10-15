@@ -62,7 +62,8 @@ extern "C" {
 
 	wordlist* initialise_wordlist(language_code);
 	void destroy_wordlist(wordlist*);
-	char *mnemonic_encode(uint8_t*, wordlist*);
+	char* mnemonic_encode(uint8_t*, wordlist*, size_t);
+	uint8_t* mnemonic_decode(const char* words, wordlist* wl);
     
 #ifdef __cplusplus
 }
