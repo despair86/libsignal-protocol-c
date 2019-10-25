@@ -29,6 +29,7 @@
 #include <string.h>
 #include <cjson.h>
 
+/* fix yer shit microsoft reeeeeee */
 #if __STDC_VERSION__ >= 199901L
 #include <stdbool.h>
 #else
@@ -53,7 +54,7 @@ char* strtok_r(char* __restrict s, const char* __restrict delim, char** __restri
 #endif
 
 
-/**/
+/* unique prefix length */
 static get_prefix_length(l)
 language_code l;
 {
@@ -674,7 +675,7 @@ wordlist* wl;
 		p = utarray_find(word_map, &tmp, strsort);
 		if (!p)
 		{
-			printf("word %s not found in trimmed word map: language code: %d\n", tmp, wl->lc);
+			printf("word %s not found in word map: language code: %d\n", tmp, wl->lc);
 			tmp = NULL;
 			goto cleanup;
 		}
