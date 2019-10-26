@@ -65,7 +65,7 @@ int mbedtls_aesni_has_support( unsigned int what )
              : "eax", "ebx", "edx" );
         done = 1;
     }
-
+    /* Silvermont cores are fucked up somehow */ 
     return( ( c & what ) != 0 );
 }
 

@@ -33,6 +33,8 @@ endif()
 
 include_directories(. ../src ../http ../crypto ../json)
 
+add_definitions(-DSQLITE_SECURE_DELETE)
+
 set(loki_pager_app_SRCS
 main.c
 crypto_provider_mbedtls.c

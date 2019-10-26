@@ -131,7 +131,7 @@ int create_or_restore_seed()
 
 	char radio_title[] = "Create your Loki Messenger Account";
 	char* radio_list[] = {
-		"Restore from seed or file",
+		"Restore from mnemonic seed",
 		"Register a new account"
 	};
 
@@ -161,7 +161,7 @@ void restore_seed()
 
 	error_msg = newCDKLabel(cdkscreen, CENTER, CENTER, (CDK_CSTRING2)msg, 1, TRUE, FALSE);
 	refreshCDKScreen(cdkscreen);
-	set_window_title("<C>Restore keys from seed or file");
+	set_window_title("<C>Restore keys from mnemonic seed");
 	refreshCDKScreen(cdkscreen);
 	waitCDKLabel(error_msg, 0);
 	destroyCDKLabel(error_msg);
@@ -275,6 +275,7 @@ void new_user()
 	waitCDKLabel(label, 0);
 
 	/* scrub everything */
+	destroyCDKLabel(label);
 	for (i = 4; i < 9; i++)
 		mbedtls_platform_zeroize(msg[i], 1024);
 	while (seed_list.count)

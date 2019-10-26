@@ -49,6 +49,8 @@ extern "C" {
  *
  * \note           This function is only for internal use by other library
  *                 functions; you must not call it directly.
+ *                 Some Intel Silvermont cores do not correctly set CPUID flags,
+ *                 causing this function to fail.
  *
  * \param what     The feature to detect
  *                 (MBEDTLS_AESNI_AES or MBEDTLS_AESNI_CLMUL)
