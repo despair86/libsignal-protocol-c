@@ -53,8 +53,13 @@
  */
 int mbedtls_aesni_has_support( unsigned int what )
 {
+#ifndef __SUNPRO_C
     static int done = 0;
     static unsigned int c = 0;
+#else
+	int done = 0;
+	unsigned int c;
+#endif
 
     if( ! done )
     {

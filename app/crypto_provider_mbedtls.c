@@ -37,7 +37,7 @@ static mbedtls_ctr_drbg_context drbg_ctx;
 static mbedtls_entropy_context rnd_ctx;
 static int randumb_active = 0;
 /* A so-called "device specific id" to seed the internal RNG - here it's app-specific */
-static const unsigned char* APP_SEED_RNG = "mbedtls crypto provider for Loki Messenger (lite)";
+static const unsigned char* APP_SEED_RNG = "mbedtls crypto provider for Session (lite)";
 
 static int init_mbedtls_randumb()
 {

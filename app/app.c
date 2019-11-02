@@ -229,12 +229,10 @@ void new_user()
 
 	/* Is it possible to optimise this? */
 	for (i = 4; i < 9; i++)
+	{
 		memset(msg[i], 0, 1024);
-	strlcat(msg[4], "<C>", 1024);
-	strlcat(msg[5], "<C>", 1024);
-	strlcat(msg[6], "<C>", 1024);
-	strlcat(msg[7], "<C>", 1024);
-	strlcat(msg[8], "<C>", 1024);
+		strlcat(msg[i], "<C>", 1024);
+	}
 	for (i = 0; i < 5; i++)
 	{
 		word = ARRAYLIST_GET(seed_list, i);
