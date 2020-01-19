@@ -59,8 +59,23 @@
 
 #include <stddef.h>
 
+#ifdef _WIN32
+#include <windows.h>
+#include <winbase.h>
+#else
+#include <sys/param.h>
+#include <string.h>
+#include <strings.h>
+#endif
+
 void mbedtls_platform_zeroize(void *v, size_t n)
 {
-    volatile unsigned char  *p  =  v;
-    while(n--) *p++ = 0;
+#ifdef _WIN32
+	SecureZeroMemory(v, n);
+#elif defined(BSD) || defined(__sun) || defined(__linux__)
+	explicit_bzero(v, n);
+#else
+	volatile unsigned char  *p  =  v;
+	while(n--) *p++ = 0;
+#endif
 }
