@@ -18,7 +18,7 @@
 /* Entry point for Loki Pager text-mode client for Loki communications network */
 #include "app.h"
 /* Global variables and fixed app-specific data */
-char* XCursesProgramName = "Loki Pager";
+char* XCursesProgramName = "Session Pager";
 
 static bool http_start = false;
 static bool signal_start = false;
@@ -134,7 +134,7 @@ char** argv;
 	cdkscreen = initCDKScreen(NULL);
 	initCDKColor();
 	curs_set(0);
-	window_text[0] = "Welcome to Loki Pager";
+	window_text[0] = "Welcome to Session Pager";
 
 	/* title bar */
 	title = newCDKLabel(cdkscreen, CENTER, 0,

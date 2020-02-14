@@ -21,7 +21,7 @@
   * function. If anyone has any better ideas, please send in a patch!
   * -rick
   */
-#define __LABEL__ "P A G E R   v e r s i o n   v 0 . 1"
+#define __LABEL__ "S E S S I O N  P A G E R   v e r s i o n   v 0 . 1"
 static char* loki_logo[] = {
 	"</01>        .o0l.           <!01>",
 	"</01>       ;kNMNo.          <!01>",
@@ -129,13 +129,13 @@ int create_or_restore_seed()
 	CDKRADIO* choices;
 	enum RESULT r;
 
-	char radio_title[] = "Create your Loki Messenger Account";
+	char radio_title[] = "Create your Session ID";
 	char* radio_list[] = {
 		"Restore from mnemonic seed",
 		"Register a new account"
 	};
 
-	set_window_title("<C>Loki Pager Setup");
+	set_window_title("<C>Session Pager Setup");
 	refreshCDKScreen(cdkscreen);
 	choices = newCDKRadio(cdkscreen, CENTER, CENTER, NONE, 5, 20, radio_title, (CDK_CSTRING2)radio_list, 2, '*' | A_REVERSE, 1, A_REVERSE, TRUE, FALSE);
 	r = activateCDKRadio(choices, NULL);
