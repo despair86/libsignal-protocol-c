@@ -22,6 +22,7 @@
 
 #if defined(_WIN32) || !defined(__sun)
 #ifndef BSD
+#define _POSIX_SOURCE 1
 #include <sys/types.h>
 #include <string.h>
 
@@ -136,8 +137,6 @@ size_t dsize;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#define _POSIX_SOURCE 1
-#include <string.h>
 
 /*
  * strtok_r documentation:
@@ -156,7 +155,9 @@ size_t dsize;
  */
 
 char *
-strtok_r(char * __restrict s, const char * __restrict delim, char * * __restrict last)
+strtok_r(s, delim, last)
+char* __restrict s, __restrict **last;
+const char* __restrict delim;
 {
     char *spanp, *tok;
     int c, sc;
